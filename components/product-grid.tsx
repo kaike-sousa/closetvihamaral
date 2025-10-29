@@ -18,7 +18,7 @@ const products: Product[] = [
 
 export function ProductGrid() {
   return (
-    <section id="loja" className="py-16 bg-background">
+    <section id="loja" className="py-16 bg-white">
       <div className="container mx-auto px-4">
         {/* Título */}
         <div className="text-center mb-12">

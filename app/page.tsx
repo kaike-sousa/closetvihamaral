@@ -17,8 +17,8 @@ export default function Home() {
         <InfoSection /> 
         <CategoryBubbles />      
         <ProductGrid />
-        <Reviews />
         <NewArrivals />
+        <Reviews />
         <Newsletter />
       </main>
       <Footer />
