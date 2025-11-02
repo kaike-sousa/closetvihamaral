@@ -3,7 +3,6 @@ import { HeroSlider } from "@/components/hero-slider"
 import { CategoryBubbles } from "@/components/category-bubbles"
 import { ProductGrid } from "@/components/product-grid"
 import { Reviews } from "@/components/reviews"
-import { NewArrivals } from "@/components/new-arrivals"
 import { Newsletter } from "@/components/newsletter"
 import { Footer } from "@/components/footer"
 import { InfoSection } from "@/components/info-section"
@@ -17,7 +16,6 @@ export default function Home() {
         <InfoSection /> 
         <CategoryBubbles />      
         <ProductGrid />
-        <NewArrivals />
         <Reviews />
         <Newsletter />
       </main>
