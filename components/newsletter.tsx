@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,13 +16,13 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-20 bg-[#b5518f] text-white">
+    <section className="py-20 bg-white text-black">
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4 text-balance">
             Fique por Dentro das Novidades
           </h2>
-          <p className="text-primary-foreground/90 mb-8 text-lg">
+          <p className="text-gray-700 mb-8 text-lg">
             Receba em primeira mão lançamentos, promoções exclusivas e dicas de estilo
           </p>
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
@@ -33,9 +32,13 @@ export function Newsletter() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="flex-1 bg-white text-foreground border-white"
+              className="flex-1 bg-white text-black border border-gray-300 focus:border-gray-500"
             />
-            <Button type="submit" variant="secondary" size="lg" className="bg-white text-primary hover:bg-white/90">
+            <Button
+              type="submit"
+              size="lg"
+              className="bg-black text-white hover:bg-gray-800 transition"
+            >
               Inscrever-se
             </Button>
           </form>
