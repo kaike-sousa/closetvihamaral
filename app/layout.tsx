@@ -8,8 +8,8 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Bella Moda - Moda Feminina Elegante",
-  description: "Loja de roupas femininas com estilo e elegância",
+  title: "Closet Vih Amaral - A melhor da moda feminina",
+  description: "Descubra tendências exclusivas e peças para todas ocasiões com Vitória Amaral.",
   generator: "v0.app",
 }
 
