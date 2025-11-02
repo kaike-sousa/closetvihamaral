@@ -4,6 +4,7 @@ import { CategoryBubbles } from "@/components/category-bubbles"
 import { ProductGrid } from "@/components/product-grid"
 import { Reviews } from "@/components/reviews"
 import { Newsletter } from "@/components/newsletter"
+import InstagramBanner from "@/components/instagram-banner"
 import { Footer } from "@/components/footer"
 import { InfoSection } from "@/components/info-section"
 
@@ -16,6 +17,7 @@ export default function Home() {
         <InfoSection /> 
         <CategoryBubbles />      
         <ProductGrid />
+        <InstagramBanner /> 
         <Reviews />
         <Newsletter />
       </main>
