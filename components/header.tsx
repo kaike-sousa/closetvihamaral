@@ -22,10 +22,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* 🔹 Barra de informações rolando contínua (sem pausas) */}
+      {/* 🔹 Barra de informações rolando contínua */}
       <div className="relative overflow-hidden bg-[#b5518f] text-gray-100 border-b border-pink-200">
         <div className="marquee-track font-medium text-sm py-2 whitespace-nowrap">
-          {/* Três cópias — fluxo infinito e suave */}
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex items-center gap-16 px-8">
               {messages.map((msg, idx) => (
@@ -40,9 +39,9 @@ export function Header() {
       <div className="bg-white border-b border-border">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo → botão "Home" */}
             <div className="flex-shrink-0">
-              <Link href="/" className="flex flex-col items-center group select-none">
+              <Link href="/" className="flex flex-col items-center group select-none cursor-pointer">
                 <div className="flex items-center gap-2">
                   <h1 className="font-serif text-4xl font-bold text-gray-800 tracking-tight group-hover:text-pink-600 transition-colors">
                     closet
@@ -69,21 +68,27 @@ export function Header() {
 
             {/* Navegação Desktop */}
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/" className="text-foreground hover:text-primary transition-colors">
-                Home
-              </Link>
               <a href="/#loja" className="text-foreground hover:text-primary transition-colors">
-                Loja
+                VER TUDO
               </a>
               <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
-                Novidades
+                Conjuntos
               </a>
-              <Link href="/sobre" className="text-foreground hover:text-primary transition-colors">
-                Sobre
-              </Link>
-              <Link href="/contato" className="text-foreground hover:text-primary transition-colors">
-                Contato
-              </Link>
+              <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                Saias
+              </a>
+              <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                Vestidos
+              </a>
+              <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                Croppeds
+              </a>
+              <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                Bodys
+              </a>
+              <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                Calças
+              </a>
             </nav>
 
             {/* Ações */}
@@ -124,32 +129,38 @@ export function Header() {
             </div>
           )}
 
-          {/* Menu Mobile */}
+          {/* Menu Mobile (idêntico ao Desktop) */}
           {isMenuOpen && (
             <nav className="md:hidden pb-4 animate-in slide-in-from-top">
               <div className="flex flex-col gap-4">
-                <Link href="/" className="text-foreground hover:text-primary transition-colors">
-                  Home
-                </Link>
                 <a href="/#loja" className="text-foreground hover:text-primary transition-colors">
-                  Loja
+                  VER TUDO
                 </a>
                 <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
-                  Novidades
+                  Conjuntos
                 </a>
-                <Link href="/sobre" className="text-foreground hover:text-primary transition-colors">
-                  Sobre
-                </Link>
-                <Link href="/contato" className="text-foreground hover:text-primary transition-colors">
-                  Contato
-                </Link>
+                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                  Saias
+                </a>
+                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                  Vestidos
+                </a>
+                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                  Croppeds
+                </a>
+                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                  Bodys
+                </a>
+                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                  Calças
+                </a>
               </div>
             </nav>
           )}
         </div>
       </div>
 
-      {/* 🔹 CSS da animação perfeita */}
+      {/* 🔹 CSS da animação */}
       <style jsx>{`
         @keyframes marquee {
           0% {
@@ -165,7 +176,7 @@ export function Header() {
           animation: marquee 15s linear infinite;
         }
         .marquee-track > div {
-          gap: 2rem; /* antes era 16, diminuiu o espaço entre mensagens */
+          gap: 2rem;
         }
       `}</style>
     </header>

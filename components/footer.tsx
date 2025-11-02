@@ -1,11 +1,12 @@
 import { Facebook, Instagram, Mail, MapPin } from "lucide-react"
+import Link from "next/link"
 
 export function Footer() {
   return (
     <footer className="text-white py-12" style={{ backgroundColor: "#b5518f" }}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* About */}
+          {/* Sobre a Marca */}
           <div>
             <h3 className="font-serif text-2xl font-bold mb-4">Closet Vih Amaral</h3>
             <p className="text-white/90 leading-relaxed">
@@ -13,39 +14,59 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Links do site (iguais aos do header) */}
           <div>
-            <h4 className="font-semibold mb-4">Links Rápidos</h4>
+            <h4 className="font-semibold mb-4">Navegação</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#home" className="text-white/90 hover:text-white transition-colors">
-                  Home
+                <a href="/#loja" className="text-white/90 hover:text-white transition-colors">
+                  VER TUDO
                 </a>
               </li>
               <li>
-                <a href="#loja" className="text-white/90 hover:text-white transition-colors">
-                  Loja
+                <a href="/#novidades" className="text-white/90 hover:text-white transition-colors">
+                  Conjuntos
                 </a>
               </li>
               <li>
-                <a href="#novidades" className="text-white/90 hover:text-white transition-colors">
-                  Novidades
+                <a href="/#novidades" className="text-white/90 hover:text-white transition-colors">
+                  Saias
                 </a>
               </li>
               <li>
-                <a href="#sobre" className="text-white/90 hover:text-white transition-colors">
-                  Sobre Nós
+                <a href="/#novidades" className="text-white/90 hover:text-white transition-colors">
+                  Vestidos
                 </a>
               </li>
               <li>
-                <a href="#contato" className="text-white/90 hover:text-white transition-colors">
+                <a href="/#novidades" className="text-white/90 hover:text-white transition-colors">
+                  Croppeds
+                </a>
+              </li>
+              <li>
+                <a href="/#novidades" className="text-white/90 hover:text-white transition-colors">
+                  Bodys
+                </a>
+              </li>
+              <li>
+                <a href="/#novidades" className="text-white/90 hover:text-white transition-colors">
+                  Calças
+                </a>
+              </li>
+              <li>
+                <Link href="/sobre" className="text-white/90 hover:text-white transition-colors">
+                  Sobre
+                </Link>
+              </li>
+              <li>
+                <Link href="/contato" className="text-white/90 hover:text-white transition-colors">
                   Contato
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Customer Service */}
+          {/* Atendimento */}
           <div>
             <h4 className="font-semibold mb-4">Atendimento</h4>
             <ul className="space-y-2">
@@ -72,7 +93,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contato */}
           <div id="contato">
             <h4 className="font-semibold mb-4">Contato</h4>
             <ul className="space-y-3">
