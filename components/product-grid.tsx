@@ -20,17 +20,26 @@ export function ProductGrid() {
   return (
     <section id="loja" className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        {/* Título */}
+        {/* Best Sellers */}
         <div className="text-center mb-12">
           <h2 className="font-serif text-4xl md:text-5xl font-bold mb-2 text-balance">
-            Mais Vendidos
+            Best Sellers
           </h2>
           <p className="text-muted-foreground text-lg">
             Os Queridinhos do Mês no Closet
           </p>
         </div>
+        <ProductCarousel products={products} />
 
-        {/* Carrossel */}
+        {/* Últimos Lançamentos */}
+        <div className="text-center mt-16 mb-12">
+          <h2 className="font-serif text-4xl md:text-5xl font-bold mb-2 text-balance">
+            Últimos Lançamentos
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            As Novidades da Moda Gringa
+          </p>
+        </div>
         <ProductCarousel products={products} />
       </div>
     </section>
