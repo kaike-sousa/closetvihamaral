@@ -6,8 +6,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useCart } from "@/hooks/use-cart"
 import Link from "next/link"
 
-export interface Product {
-  id: number
+export interface ProductCardData {
+  id: string
   name: string
   price: number
   image: string
@@ -15,7 +15,7 @@ export interface Product {
 }
 
 interface ProductCardProps {
-  product: Product
+  product: ProductCardData
 }
 
 export function ProductCard({ product }: ProductCardProps) {
