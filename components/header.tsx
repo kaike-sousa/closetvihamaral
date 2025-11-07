@@ -133,25 +133,25 @@ export function Header() {
           {isMenuOpen && (
             <nav className="md:hidden pb-4 animate-in slide-in-from-top">
               <div className="flex flex-col gap-4">
-                <a href="/#loja" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/ver_tudo" className="text-foreground hover:text-primary transition-colors">
                   VER TUDO
                 </a>
-                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/conjuntos" className="text-foreground hover:text-primary transition-colors">
                   Conjuntos
                 </a>
-                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/saias" className="text-foreground hover:text-primary transition-colors">
                   Saias
                 </a>
-                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/vestidos" className="text-foreground hover:text-primary transition-colors">
                   Vestidos
                 </a>
-                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/croppeds" className="text-foreground hover:text-primary transition-colors">
                   Croppeds
                 </a>
-                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/bodys" className="text-foreground hover:text-primary transition-colors">
                   Bodys
                 </a>
-                <a href="/#novidades" className="text-foreground hover:text-primary transition-colors">
+                <a href="/produtos/calcas" className="text-foreground hover:text-primary transition-colors">
                   Calças
                 </a>
               </div>
