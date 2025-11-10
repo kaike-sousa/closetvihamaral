@@ -1,0 +1,58 @@
+[
+  {
+    "id": "PED001",
+    "cliente": "Maria Silva",
+    "email": "maria@email.com",
+    "total": 279.8,
+    "status": "entregue",
+    "dataPedido": "2024-01-05",
+    "dataEntrega": "2024-01-10",
+    "itens": [
+      { "produtoId": "1", "nome": "Vestido Floral", "quantidade": 1, "preco": 159.9 },
+      { "produtoId": "2", "nome": "Blusa Branca Premium", "quantidade": 1, "preco": 89.9 }
+    ]
+  },
+  {
+    "id": "PED002",
+    "cliente": "Ana Costa",
+    "email": "ana@email.com",
+    "total": 129.9,
+    "status": "enviado",
+    "dataPedido": "2024-01-18",
+    "dataEntrega": null,
+    "itens": [{ "produtoId": "3", "nome": "Calça Jeans Skinny", "quantidade": 1, "preco": 129.9 }]
+  },
+  {
+    "id": "PED003",
+    "cliente": "Julia Santos",
+    "email": "julia@email.com",
+    "total": 349.9,
+    "status": "pendente",
+    "dataPedido": "2024-01-20",
+    "dataEntrega": null,
+    "itens": [{ "produtoId": "4", "nome": "Jaqueta de Couro", "quantidade": 1, "preco": 349.9 }]
+  },
+  {
+    "id": "PED004",
+    "cliente": "Beatriz Lima",
+    "email": "beatriz@email.com",
+    "total": 119.9,
+    "status": "cancelado",
+    "dataPedido": "2024-01-12",
+    "dataEntrega": null,
+    "itens": [{ "produtoId": "5", "nome": "Saias Midi", "quantidade": 1, "preco": 119.9 }]
+  },
+  {
+    "id": "PED005",
+    "cliente": "Carla Oliveira",
+    "email": "carla@email.com",
+    "total": 209.8,
+    "status": "entregue",
+    "dataPedido": "2024-01-03",
+    "dataEntrega": "2024-01-07",
+    "itens": [
+      { "produtoId": "1", "nome": "Vestido Floral", "quantidade": 1, "preco": 159.9 },
+      { "produtoId": "5", "nome": "Saias Midi", "quantidade": 1, "preco": 119.9 }
+    ]
+  }
+]

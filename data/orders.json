@@ -1,0 +1,106 @@
+{
+  "orders": [
+    {
+      "id": "ORD-001",
+      "customerName": "Maria Silva",
+      "customerEmail": "maria.silva@email.com",
+      "customerPhone": "(11) 9999-8888",
+      "products": [
+        {
+          "productId": "1",
+          "productName": "Vestido Florido",
+          "quantity": 1,
+          "price": 189.9
+        }
+      ],
+      "total": 189.9,
+      "status": "entregue",
+      "date": "2024-01-10",
+      "address": "Rua das Flores, 123 - São Paulo, SP"
+    },
+    {
+      "id": "ORD-002",
+      "customerName": "Ana Costa",
+      "customerEmail": "ana.costa@email.com",
+      "customerPhone": "(11) 9999-7777",
+      "products": [
+        {
+          "productId": "2",
+          "productName": "Blusa Social",
+          "quantity": 2,
+          "price": 129.9
+        },
+        {
+          "productId": "3",
+          "productName": "Calça Jeans Premium",
+          "quantity": 1,
+          "price": 159.9
+        }
+      ],
+      "total": 419.7,
+      "status": "processando",
+      "date": "2024-01-18",
+      "address": "Av. Paulista, 1000 - São Paulo, SP"
+    },
+    {
+      "id": "ORD-003",
+      "customerName": "João Santos",
+      "customerEmail": "joao.santos@email.com",
+      "customerPhone": "(11) 9999-6666",
+      "products": [
+        {
+          "productId": "4",
+          "productName": "Cardigan Tricô",
+          "quantity": 1,
+          "price": 149.9
+        },
+        {
+          "productId": "5",
+          "productName": "Saia Plissada",
+          "quantity": 1,
+          "price": 119.9
+        }
+      ],
+      "total": 269.8,
+      "status": "envio",
+      "date": "2024-01-17",
+      "address": "Rua das Acácias, 456 - Rio de Janeiro, RJ"
+    },
+    {
+      "id": "ORD-004",
+      "customerName": "Patricia Oliveira",
+      "customerEmail": "patricia.oliveira@email.com",
+      "customerPhone": "(11) 9999-5555",
+      "products": [
+        {
+          "productId": "1",
+          "productName": "Vestido Florido",
+          "quantity": 2,
+          "price": 189.9
+        }
+      ],
+      "total": 379.8,
+      "status": "entregue",
+      "date": "2024-01-05",
+      "address": "Rua das Orquídeas, 789 - Belo Horizonte, MG"
+    },
+    {
+      "id": "ORD-005",
+      "customerName": "Fernanda Lima",
+      "customerEmail": "fernanda.lima@email.com",
+      "customerPhone": "(11) 9999-4444",
+      "products": [
+        {
+          "productId": "3",
+          "productName": "Calça Jeans Premium",
+          "quantity": 1,
+          "price": 159.9
+        }
+      ],
+      "total": 159.9,
+      "status": "pendente",
+      "date": "2024-01-19",
+      "address": "Rua das Flores, 321 - Curitiba, PR"
+    }
+  ]
+}
