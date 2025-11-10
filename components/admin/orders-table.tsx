@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { type Order, orders } from "@/lib/mock-data"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Eye, Edit } from "lucide-react"
@@ -24,11 +23,35 @@ const statusLabels: Record<OrderStatus, string> = {
   entregue: "Entregue",
 }
 
+type Order = {
+  id: number
+  customerName: string
+  customerEmail: string
+  status: OrderStatus
+  total: number
+  createdAt: string
+}
+
 export function OrdersTable() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [ordersList, setOrdersList] = useState(orders)
+  const [ordersList, setOrdersList] = useState<Order[]>([]) // inicializa vazio
+
+  // Carrega os pedidos da API
+  useEffect(() => {
+    async function loadOrders() {
+      try {
+        const res = await fetch("/api/orders")
+        const data = await res.json()
+        // Transformar se necessário (ex: status ou date)
+        setOrdersList(data)
+      } catch (err) {
+        console.error("Erro ao carregar pedidos:", err)
+      }
+    }
+    loadOrders()
+  }, [])
 
   const handleEdit = (order: Order) => {
     setSelectedOrder(order)
@@ -67,7 +90,10 @@ export function OrdersTable() {
               </thead>
               <tbody>
                 {ordersList.map((order) => (
-                  <tr key={order.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                  <tr
+                    key={order.id}
+                    className="border-b border-border hover:bg-muted/50 transition-colors"
+                  >
                     <td className="py-3 px-4 font-medium">{order.id}</td>
                     <td className="py-3 px-4">
                       <div>
@@ -75,21 +101,37 @@ export function OrdersTable() {
                         <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
                       </div>
                     </td>
-                    <td className="py-3 px-4">{new Date(order.date).toLocaleDateString("pt-BR")}</td>
-                    <td className="py-3 px-4 font-medium">R$ {order.total.toFixed(2).replace(".", ",")}</td>
+                    <td className="py-3 px-4">
+                      {new Date(order.createdAt).toLocaleDateString("pt-BR")}
+                    </td>
+                    <td className="py-3 px-4 font-medium">
+                      R$ {order.total.toFixed(2).replace(".", ",")}
+                    </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-block px-2 py-1 rounded text-xs font-semibold ${statusColors[order.status as OrderStatus]}`}
+                        className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                          statusColors[order.status]
+                        }`}
                       >
-                        {statusLabels[order.status as OrderStatus]}
+                        {statusLabels[order.status]}
                       </span>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex justify-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetails(order)} title="Ver detalhes">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewDetails(order)}
+                          title="Ver detalhes"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(order)} title="Editar status">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(order)}
+                          title="Editar status"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                       </div>
@@ -102,9 +144,18 @@ export function OrdersTable() {
         </CardContent>
       </Card>
 
-      <OrderDialog isOpen={isEditOpen} onOpenChange={setIsEditOpen} order={selectedOrder} onSave={handleSave} />
+      <OrderDialog
+        isOpen={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        order={selectedOrder}
+        onSave={handleSave}
+      />
 
-      <OrderDetailsDialog isOpen={isDetailsOpen} onOpenChange={setIsDetailsOpen} order={selectedOrder} />
+      <OrderDetailsDialog
+        isOpen={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        order={selectedOrder}
+      />
     </>
   )
 }

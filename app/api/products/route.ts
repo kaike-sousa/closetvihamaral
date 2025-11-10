@@ -3,49 +3,27 @@
 
     const prisma = new PrismaClient()
 
-    export async function POST(req: Request) {
-    try {
-        const data = await req.json()
-
-        const product = await prisma.product.create({
-        data: {
-            slug: data.slug,
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            category: data.category,
-
-            images: {
-            create: data.images.map((url: string) => ({ url })),
-            },
-
-            variants: {
-            create: data.variants.map((variant: any) => ({
-                color: {
-                connectOrCreate: {
-                    where: { name: variant.color.name },
-                    create: {
-                    name: variant.color.name,
-                    hex: variant.color.hex,
-                    image: variant.color.image,
-                    },
-                },
-                },
-                size: {
-                connectOrCreate: {
-                    where: { name: variant.size },
-                    create: { name: variant.size },
-                },
-                },
-                stock: variant.stock,
-            })),
+    // GET /api/products
+    export async function GET() {
+    const products = await prisma.product.findMany({
+        include: {
+        images: true,
+        variants: {
+            include: {
+            color: true,
+            size: true,
             },
         },
-        })
-
-        return NextResponse.json(product)
-    } catch (e) {
-        console.log(e)
-        return NextResponse.json({ error: "erro" }, { status: 500 })
+        },
+    })
+    return NextResponse.json(products)
     }
+
+    // POST /api/products
+    export async function POST(request: Request) {
+    const data = await request.json()
+    const product = await prisma.product.create({
+        data,
+    })
+    return NextResponse.json(product)
     }

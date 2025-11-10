@@ -1,9 +1,7 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import type { Order } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -18,6 +16,7 @@ type OrderStatus = "pendente" | "processando" | "envio" | "entregue"
 
 export function OrderDialog({ isOpen, onOpenChange, order, onSave }: OrderDialogProps) {
   const [status, setStatus] = useState<OrderStatus>("pendente")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (order) {
@@ -25,11 +24,30 @@ export function OrderDialog({ isOpen, onOpenChange, order, onSave }: OrderDialog
     }
   }, [order, isOpen])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (order) {
-      onSave({ ...order, status })
+    if (!order) return
+
+    setLoading(true)
+    try {
+      // Chamada à API para atualizar o pedido no banco
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error("Erro ao atualizar pedido")
+
+      const updatedOrder = await res.json()
+
+      // Atualiza o estado local
+      onSave(updatedOrder)
       onOpenChange(false)
+    } catch (err) {
+      console.error(err)
+      alert("Não foi possível atualizar o pedido.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -59,10 +77,12 @@ export function OrderDialog({ isOpen, onOpenChange, order, onSave }: OrderDialog
             </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-border">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                 Cancelar
               </Button>
-              <Button type="submit">Atualizar</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Atualizando..." : "Atualizar"}
+              </Button>
             </div>
           </form>
         </CardContent>

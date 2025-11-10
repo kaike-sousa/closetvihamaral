@@ -1,14 +1,17 @@
-"use client"
+"use server"
 
+import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrendingUp, Package, ShoppingCart, DollarSign } from "lucide-react"
-import { getTotalSales, getTotalOrders, getTotalProducts, getOutOfStockProducts } from "@/lib/mock-data"
 
-export function DashboardMetrics() {
-  const totalSales = getTotalSales()
-  const totalOrders = getTotalOrders()
-  const totalProducts = getTotalProducts()
-  const outOfStock = getOutOfStockProducts()
+export async function DashboardMetrics() {
+  // Consulta real no banco Neon via Prisma
+  const [totalProducts, outOfStockProducts, totalOrders, totalSales] = await Promise.all([
+    prisma.product.count(),
+    prisma.productVariant.count({ where: { stock: 0 } }),
+    prisma.order?.count?.() ?? 0, // se não tiver Order no schema, mantém 0
+    0, // se ainda não tem tabela de vendas, deixamos 0 temporário
+  ])
 
   const metrics = [
     {
@@ -37,7 +40,7 @@ export function DashboardMetrics() {
     },
     {
       title: "Fora de Estoque",
-      value: outOfStock.length.toString(),
+      value: outOfStockProducts.toString(),
       description: "Produtos sem estoque",
       icon: TrendingUp,
       color: "bg-red-100 dark:bg-red-900",
