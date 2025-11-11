@@ -1,29 +1,61 @@
     import { NextResponse } from "next/server"
-    import { PrismaClient } from "@prisma/client"
+    import { createClient } from "@supabase/supabase-js"
 
-    const prisma = new PrismaClient()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // GET /api/products
+    // ======================
+    // GET — Listar produtos
+    // ======================
     export async function GET() {
-    const products = await prisma.product.findMany({
-        include: {
-        images: true,
-        variants: {
-            include: {
-            color: true,
-            size: true,
-            },
-        },
-        },
-    })
-    return NextResponse.json(products)
+    try {
+        const { data: products, error } = await supabase
+        .from("products")
+        .select("*")
+
+        if (error) {
+        console.error("❌ Erro ao buscar produtos:", error.message)
+        return NextResponse.json(
+            { error: "Erro ao buscar produtos" },
+            { status: 500 }
+        )
+        }
+
+        return NextResponse.json(products)
+    } catch (err) {
+        console.error("❌ Erro inesperado:", err)
+        return NextResponse.json({ error: "Erro inesperado" }, { status: 500 })
+    }
     }
 
-    // POST /api/products
+    // ======================
+    // POST — Criar produto
+    // ======================
     export async function POST(request: Request) {
-    const data = await request.json()
-    const product = await prisma.product.create({
-        data,
-    })
-    return NextResponse.json(product)
+    try {
+        const data = await request.json()
+
+        const { error } = await supabase.from("products").insert([
+        {
+            name: data.name,
+            description: data.description,
+            price: parseFloat(data.price),
+            image_url: data.image_url,
+        },
+        ])
+
+        if (error) {
+        console.error("❌ Erro ao criar produto:", error.message)
+        return NextResponse.json(
+            { error: "Erro ao criar produto" },
+            { status: 500 }
+        )
+        }
+
+        return NextResponse.json({ message: "✅ Produto criado com sucesso!" })
+    } catch (err) {
+        console.error("❌ Erro inesperado:", err)
+        return NextResponse.json({ error: "Erro inesperado" }, { status: 500 })
+    }
     }

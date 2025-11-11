@@ -1,12 +1,25 @@
-"use client"
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { ProductCard } from "@/components/product-card";
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { ProductCard } from "@/components/product-card"
-import { products } from "@/data/products"
+async function getProducts() {
+  // Usa caminho relativo (funciona local e na Vercel)
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/products`, {
+    cache: "no-store", // sempre busca direto do banco
+  });
 
-export default function SaiasPage() {
-  const saias = products.filter((p) => p.category === "saias")
+  if (!res.ok) {
+    throw new Error("Erro ao buscar produtos");
+  }
+
+  return res.json();
+}
+
+export default async function SaiasPage() {
+  const products = await getProducts();
+
+  // Filtra somente a categoria "saias"
+  const saias = products.filter((p: any) => p.category === "saias");
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -21,14 +34,14 @@ export default function SaiasPage() {
           </p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {saias.map((product) => (
+            {saias.map((product: any) => (
               <ProductCard
                 key={product.id}
                 product={{
                   id: product.id,
                   name: product.name,
                   price: product.price,
-                  image: product.images[0],
+                  image: product.images?.[0]?.url || "/placeholder.png",
                   category: product.category,
                 }}
               />
@@ -39,5 +52,5 @@ export default function SaiasPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

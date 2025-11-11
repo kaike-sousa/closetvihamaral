@@ -8,68 +8,76 @@ datasource db {
 }
 
 model Product {
-  id          Int              @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
-  description String
-  price       Float
+  description String?
   category    String
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  slug        String           @unique
-  images      ProductImage[]
-  variants    ProductVariant[]
-  items       OrderItem[]
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 🔗 Relações
+  images     ProductImage[]
+  variations ProductVariation[]
+  orderItems OrderItem[]
 }
 
 model ProductImage {
   id        Int     @id @default(autoincrement())
   url       String
-  productId Int
+  color     String? // cor correspondente (opcional)
   product   Product @relation(fields: [productId], references: [id])
+  productId Int
 }
 
-model ProductVariant {
-  id        Int          @id @default(autoincrement())
+model ProductVariation {
+  id        Int     @id @default(autoincrement())
+  size      String // Ex: P, M, G
+  stock     Int     @default(0)
+  color     String? // Nome da cor (ex: vermelho)
+  image     String? // ← campo adicionado para armazenar imagem da variação
+  product   Product @relation(fields: [productId], references: [id])
   productId Int
-  colorId   Int
-  sizeId    Int
-  stock     Int          @default(0)
-  color     VariantColor @relation(fields: [colorId], references: [id])
-  product   Product      @relation(fields: [productId], references: [id])
-  size      VariantSize  @relation(fields: [sizeId], references: [id])
+
+  // 🔗 Ligações opcionais com tabelas auxiliares
+  colorRef VariantColor? @relation(fields: [colorId], references: [id])
+  colorId  Int?
+
+  sizeRef VariantSize?  @relation(fields: [sizeId], references: [id])
+  sizeId  Int?
 }
 
 model VariantColor {
-  id       Int              @id @default(autoincrement())
-  name     String
-  hex      String
-  image    String?
-  variants ProductVariant[]
+  id       Int                @id @default(autoincrement())
+  name     String // ex: Vermelho
+  hex      String // ex: #FF0000
+  image    String? // imagem específica da cor (opcional)
+  variants ProductVariation[] // ligação com variações
 }
 
 model VariantSize {
-  id       Int              @id @default(autoincrement())
-  name     String
-  range    String?
-  variants ProductVariant[]
+  id       Int                @id @default(autoincrement())
+  name     String // ex: M
+  range    String? // ex: 38-40
+  variants ProductVariation[]
 }
 
 model Order {
   id            Int         @id @default(autoincrement())
   customerName  String
   customerEmail String
-  status        String       // pendente, processando, envio, entregue
+  status        String // pendente, processando, envio, entregue
   total         Float
-  createdAt     DateTime     @default(now())
+  createdAt     DateTime    @default(now())
   items         OrderItem[]
 }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   orderId   Int
   productId Int
-  quantity  Int       @default(1)
+  quantity  Int     @default(1)
   price     Float
-  order     Order     @relation(fields: [orderId], references: [id])
-  product   Product   @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }

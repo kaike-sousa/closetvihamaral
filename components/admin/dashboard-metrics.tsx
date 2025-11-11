@@ -6,12 +6,24 @@ import { TrendingUp, Package, ShoppingCart, DollarSign } from "lucide-react"
 
 export async function DashboardMetrics() {
   // Consulta real no banco Neon via Prisma
-  const [totalProducts, outOfStockProducts, totalOrders, totalSales] = await Promise.all([
-    prisma.product.count(),
-    prisma.productVariant.count({ where: { stock: 0 } }),
-    prisma.order?.count?.() ?? 0, // se não tiver Order no schema, mantém 0
-    0, // se ainda não tem tabela de vendas, deixamos 0 temporário
-  ])
+  let totalProducts = 0
+  let outOfStockProducts = 0
+  let totalOrders = 0
+  let totalSales = 0
+
+  try {
+    const results = await Promise.all([
+      prisma.product.count(),
+      prisma.productVariation.count({ where: { stock: 0 } }),
+      prisma.order.count(),
+    ])
+
+    totalProducts = results[0]
+    outOfStockProducts = results[1]
+    totalOrders = results[2]
+  } catch (error) {
+    console.error("⚠️ Erro ao consultar métricas do dashboard:", error)
+  }
 
   const metrics = [
     {
