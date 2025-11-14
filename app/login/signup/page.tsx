@@ -9,12 +9,21 @@
     import { Input } from "@/components/ui/input";
     import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+    import { Eye, EyeOff } from "lucide-react";
+
     export default function SignUpPage() {
     const router = useRouter();
 
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
+
     const [email, setEmail] = useState("");
+
     const [password, setPassword] = useState("");
-    const [phone, setPhone] = useState(""); // <-- novo campo
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const [error, setError] = useState("");
 
@@ -22,11 +31,19 @@
         e.preventDefault();
         setError("");
 
+        if (password !== confirmPassword) {
+        setError("As senhas não coincidem.");
+        return;
+        }
+
         const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            data: { phone }, // <-- salva número no user_metadata
+            data: {
+            fullName,
+            phone,
+            },
         },
         });
 
@@ -49,6 +66,14 @@
             <form onSubmit={handleSignup} className="space-y-4">
 
                 <Input
+                type="text"
+                placeholder="Nome completo"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                />
+
+                <Input
                 type="email"
                 placeholder="Seu e-mail"
                 value={email}
@@ -64,23 +89,59 @@
                 required
                 />
 
+                {/* Campo senha com olho */}
+                <div className="relative">
                 <Input
-                type="password"
-                placeholder="Crie uma senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Crie uma senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                 />
+
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-gray-500"
+                >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+                </div>
+
+                {/* Confirmar senha */}
+                <div className="relative">
+                <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirmar senha"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                />
+
+                <button
+                    type="button"
+                    onClick={() =>
+                    setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    className="absolute right-3 top-3 text-gray-500"
+                >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+                </div>
 
                 {error && (
                 <p className="text-red-500 text-sm text-center">{error}</p>
                 )}
 
-                <Button type="submit" className="w-full">Cadastrar</Button>
+                <Button type="submit" className="w-full">
+                Cadastrar
+                </Button>
 
                 <div className="text-sm text-center mt-2">
                 Já tem conta?{" "}
-                <Link href="/login" className="text-blue-600">Entrar</Link>
+                <Link href="/login" className="text-blue-600">
+                    Entrar
+                </Link>
                 </div>
             </form>
             </CardContent>

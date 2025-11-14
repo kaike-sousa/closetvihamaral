@@ -4,9 +4,12 @@
     import { useState } from "react";
     import { useRouter } from "next/navigation";
     import { supabase } from "@/lib/supabase";
+
     import { Button } from "@/components/ui/button";
     import { Input } from "@/components/ui/input";
     import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+    import { Eye, EyeOff } from "lucide-react";
 
     export default function LoginPage() {
     const router = useRouter();
@@ -15,6 +18,8 @@
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
 
     async function handleLogin(e: any) {
         e.preventDefault();
@@ -52,14 +57,27 @@
                 onChange={(e) => setEmail(e.target.value)}
                 />
 
+                {/* Campo senha com olho */}
+                <div className="relative">
                 <Input
-                type="password"
-                placeholder="Sua senha"
-                required
-                onChange={(e) => setPassword(e.target.value)}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Sua senha"
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
                 />
 
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-gray-500"
+                >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+                </div>
+
+                {error && (
+                <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
 
                 <Button className="w-full" disabled={loading}>
                 {loading ? "Entrando..." : "Entrar"}
