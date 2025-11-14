@@ -92,7 +92,15 @@ export function Header() {
             </nav>
 
             {/* Ações */}
+            
             <div className="flex items-center gap-4">
+              <Link href="/login">
+                <Button
+                  className="hidden md:flex bg-[#b5518f] hover:bg-[#9e3f78] text-white px-6"
+                >
+                  Entrar
+                </Button>
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"
@@ -119,6 +127,8 @@ export function Header() {
               >
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
+
+
             </div>
           </div>
 
@@ -154,6 +164,12 @@ export function Header() {
                 <a href="/produtos/calcas" className="text-foreground hover:text-primary transition-colors">
                   Calças
                 </a>
+                <Link href="/login">
+                  <Button className="bg-[#b5518f] hover:bg-[#9e3f78] text-white w-full">
+                    Entrar
+                  </Button>
+                </Link>
+
               </div>
             </nav>
           )}
