@@ -3,7 +3,9 @@
     import Link from "next/link";
     import { useState } from "react";
     import { useRouter } from "next/navigation";
-    import { supabase } from "@/lib/supabase";
+
+    import { createClient } from "@/lib/utils/client";
+    const supabase = createClient();
 
     import { Button } from "@/components/ui/button";
     import { Input } from "@/components/ui/input";
@@ -18,7 +20,6 @@
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-
     const [showPassword, setShowPassword] = useState(false);
 
     async function handleLogin(e: any) {
@@ -26,17 +27,41 @@
         setLoading(true);
         setError("");
 
-        const { error } = await supabase.auth.signInWithPassword({
+        // 🔹 Login Supabase
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,
         });
 
-        if (error) {
-        setError(error.message);
+        if (loginError) {
+        setError(loginError.message);
         setLoading(false);
         return;
         }
 
+        const userId = data.user.id;
+
+        // 🔥 Buscar role na tabela "users"
+        const { data: userRow, error: roleError } = await supabase
+        .from("users")               // tabela certa
+        .select("role")              // coluna certa
+        .eq("auth_uid", userId)      // coluna certa
+        .single();
+
+        if (roleError) {
+        console.error("Erro ao buscar role:", roleError);
+        setError("Erro ao validar usuário.");
+        setLoading(false);
+        return;
+        }
+
+        // 👑 Admin → Dashboard Admin
+        if (userRow?.role === "admin") {
+        router.push("/admin");
+        return;
+        }
+
+        // 👤 Usuário comum → Home
         router.push("/");
     }
 
@@ -49,7 +74,6 @@
 
             <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
-
                 <Input
                 type="email"
                 placeholder="Seu e-mail"
@@ -57,7 +81,7 @@
                 onChange={(e) => setEmail(e.target.value)}
                 />
 
-                {/* Campo senha com olho */}
+                {/* Campo senha */}
                 <div className="relative">
                 <Input
                     type={showPassword ? "text" : "password"}
@@ -92,7 +116,6 @@
                     Criar conta
                 </Link>
                 </div>
-
             </form>
             </CardContent>
         </Card>

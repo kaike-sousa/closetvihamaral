@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, ShoppingCart, Package, BarChart3, Settings, LogOut } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/utils"
 
 const sidebarLinks = [
   {
