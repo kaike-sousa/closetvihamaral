@@ -14,6 +14,7 @@
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [phone, setPhone] = useState(""); // <-- novo campo
 
     const [error, setError] = useState("");
 
@@ -24,6 +25,9 @@
         const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+            data: { phone }, // <-- salva número no user_metadata
+        },
         });
 
         if (error) {
@@ -49,6 +53,14 @@
                 placeholder="Seu e-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+                />
+
+                <Input
+                type="text"
+                placeholder="Seu número de telefone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 required
                 />
 
