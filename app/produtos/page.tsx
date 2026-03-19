@@ -45,7 +45,7 @@ function ProductsContent() {
       return
     }
 
-    // 🔥 TRANSFORMAÇÃO SEGURA
+    // TRANSFORMAÇÃO SEGURA
     const formattedProducts = (data || []).map((product: any) => {
       const colorsMap: any = {}
 
