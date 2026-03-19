@@ -15,7 +15,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Bella Moda | Loja de Roupas Femininas',
+  title: 'Closet Vih Amaral | Loja de Roupas Femininas',
   description: 'Encontre as melhores peças de moda feminina.'
 }
 

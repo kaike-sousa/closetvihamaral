@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, Minus, Plus, ChevronRight, ImageIcon } from 'lucide-react'
+
 import { StoreHeader } from '@/components/store/header'
 import { StoreFooter } from '@/components/store/footer'
 import { Product, ProductColor } from '@/lib/types'
@@ -40,7 +41,6 @@ export default function ProductPage() {
     const formatted = formatProduct(data)
     setProduct(formatted)
 
-    // cor inicial
     if (formatted.colors.length > 0) {
       const found = formatted.colors.find(
         (c: ProductColor) => c.name === colorParam
@@ -48,7 +48,6 @@ export default function ProductPage() {
       setSelectedColor(found || formatted.colors[0])
     }
 
-    // tamanho inicial
     if (formatted.sizes.length > 0) {
       setSelectedSize(formatted.sizes[0])
     }
@@ -79,32 +78,56 @@ export default function ProductPage() {
   const currentImage = selectedColor.images[currentImageIndex]
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <StoreHeader />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
+      {/* 🔥 largura aumentada */}
+      <main className="flex-1 max-w-[1400px] mx-auto px-6 py-10">
 
         {/* breadcrumb */}
-        <div className="text-sm text-muted-foreground mb-6 flex gap-2">
+        <div className="text-sm text-gray-500 mb-6 flex gap-2">
           <Link href="/">Início</Link> /
           <Link href="/produtos">Produtos</Link> /
-          <span>{product.name}</span>
+          <span className="text-black">{product.name}</span>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-10">
+        {/* layout principal */}
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
 
-          {/* IMAGENS */}
-          <div>
-            <div className="relative aspect-[3/4] bg-muted rounded-xl overflow-hidden group">
+          {/* ================= IMAGENS ================= */}
+          <div className="flex gap-4">
+
+            {/* thumbnails lateral */}
+            <div className="flex flex-col gap-3">
+              {selectedColor.images.map((img, i) => (
+                <button key={i} onClick={() => setCurrentImageIndex(i)}>
+                  <img
+                    src={img}
+                    className={`w-20 h-24 object-cover border rounded ${
+                      i === currentImageIndex
+                        ? 'border-black'
+                        : 'border-gray-200 opacity-70 hover:opacity-100'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* imagem principal maior */}
+            <div className="relative w-full aspect-[3/4] bg-white border rounded-lg overflow-hidden group">
               {currentImage ? (
-                <Image src={currentImage} alt={product.name} fill className="object-cover" />
+                <Image
+                  src={currentImage}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <ImageIcon />
                 </div>
               )}
 
-              {/* setas */}
               {selectedColor.images.length > 1 && (
                 <>
                   <button
@@ -113,7 +136,7 @@ export default function ProductPage() {
                         prev === 0 ? selectedColor.images.length - 1 : prev - 1
                       )
                     }
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -124,7 +147,7 @@ export default function ProductPage() {
                         prev === selectedColor.images.length - 1 ? 0 : prev + 1
                       )
                     }
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -132,37 +155,21 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* thumbnails */}
-            <div className="flex gap-2 mt-3">
-              {selectedColor.images.map((img, i) => (
-                <button key={i} onClick={() => setCurrentImageIndex(i)}>
-                  <img
-                    src={img}
-                    className={`w-16 h-20 object-cover rounded border ${
-                      i === currentImageIndex ? 'border-black' : ''
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* INFO */}
-          <div className="flex flex-col">
+          {/* ================= INFO ================= */}
+          <div className="flex flex-col max-w-md">
 
-            <h1 className="text-3xl font-semibold">{product.name}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              {product.name}
+            </h1>
 
-            <p className="text-2xl font-bold mt-3">
+            <p className="text-3xl font-bold mt-4">
               {formatPrice(product.price)}
             </p>
 
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-500 mt-1">
               ou 3x de {formatPrice(product.price / 3)} sem juros
-            </p>
-
-            {/* descrição */}
-            <p className="mt-6 text-muted-foreground">
-              {product.description}
             </p>
 
             {/* CORES */}
@@ -176,7 +183,7 @@ export default function ProductPage() {
                   <Link
                     key={color.name}
                     href={`/produto/${product.id}?cor=${color.name}`}
-                    className={`w-10 h-10 rounded-full border-2 ${
+                    className={`w-8 h-8 rounded-full border-2 ${
                       selectedColor.name === color.name
                         ? 'border-black scale-110'
                         : 'border-gray-300'
@@ -196,10 +203,10 @@ export default function ProductPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 border rounded ${
+                    className={`px-4 py-2 border text-sm font-medium ${
                       selectedSize === size
-                        ? 'bg-black text-white'
-                        : 'hover:border-black'
+                        ? 'bg-black text-white border-black'
+                        : 'border-gray-300 hover:border-black'
                     }`}
                   >
                     {size}
@@ -212,26 +219,41 @@ export default function ProductPage() {
             <div className="mt-8">
               <p className="text-sm font-medium mb-2">Quantidade</p>
 
-              <div className="flex items-center gap-4">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                  <Minus />
+              <div className="flex items-center border w-fit rounded">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-2 hover:bg-gray-100"
+                >
+                  <Minus size={16} />
                 </button>
 
-                <span>{quantity}</span>
+                <span className="px-4">{quantity}</span>
 
-                <button onClick={() => setQuantity(quantity + 1)}>
-                  <Plus />
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-3 py-2 hover:bg-gray-100"
+                >
+                  <Plus size={16} />
                 </button>
               </div>
             </div>
 
             {/* BOTÃO */}
-            <button className="mt-8 w-full bg-black text-white py-4 rounded-lg font-medium hover:opacity-90">
+            <button className="mt-8 w-full bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition">
               Adicionar ao carrinho
             </button>
 
           </div>
         </div>
+
+        {/* 🔥 DESCRIÇÃO ABAIXO */}
+        <div className="mt-16 max-w-3xl">
+          <h2 className="text-lg font-semibold mb-4">Descrição do produto</h2>
+          <p className="text-gray-600 leading-relaxed">
+            {product.description}
+          </p>
+        </div>
+
       </main>
 
       <StoreFooter />

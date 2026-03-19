@@ -6,15 +6,14 @@
     import { useEffect, useState, useCallback } from "react"
 
     const categories = [
-    { name: "VER TUDO", image: "/categoryas/category-conjuntos.jpg", path: "/produtos/ver_tudo" },
-    { name: "Conjuntos", image: "/categoryas/category-conjuntos.jpg", path: "/produtos/conjuntos" },
-    { name: "Saias", image: "/categoryas/category-saias.jpg", path: "/produtos/saias" },
-    { name: "Vestidos", image: "/categoryas/category-vestidos.jpg", path: "/produtos/vestidos" },
-    { name: "Croppeds", image: "/categoryas/category-croppeds.jpg", path: "/produtos/croppeds" },
-    { name: "Bodys", image: "/categoryas/category-bodys.jpg", path: "/produtos/bodys" },
-    { name: "Calças", image: "/categoryas/category-calcas.jpg", path: "/produtos/calcas" },
+    { name: "VER TUDO", image: "/categoryas/category-conjuntos.jpg", path: "/produtos" },
+    { name: "Conjuntos", image: "/categoryas/category-conjuntos.jpg", path: "/produtos?categoria=conjuntos" },
+    { name: "Saias", image: "/categoryas/category-saias.jpg", path: "/produtos?categoria=saias" },
+    { name: "Vestidos", image: "/categoryas/category-vestidos.jpg", path: "/produtos?categoria=vestidos" },
+    { name: "Croppeds", image: "/categoryas/category-croppeds.jpg", path: "/produtos?categoria=croppeds" },
+    { name: "Bodys", image: "/categoryas/category-bodys.jpg", path: "/produtos?categoria=bodys" },
+    { name: "Calças", image: "/categoryas/category-calcas.jpg", path: "/produtos?categoria=calcas" },
     ]
-
 
 
     export function CategoryBubbles() {
