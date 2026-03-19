@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, Minus, Plus, ChevronRight, ImageIcon } from 'lucide-react'
-
+import { Truck } from 'lucide-react'
 import { StoreHeader } from '@/components/store/header'
 import { StoreFooter } from '@/components/store/footer'
 import { Product, ProductColor } from '@/lib/types'
@@ -87,7 +87,7 @@ export default function ProductPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <StoreHeader />
 
-      <main className="flex-1 max-w-[1400px] mx-auto px-6 py-10">
+      <main className="flex-1 max-w-[1600px] mx-auto px-8 py-10">
 
         {/* breadcrumb */}
         <div className="text-sm text-gray-500 mb-6 flex gap-2">
@@ -97,68 +97,76 @@ export default function ProductPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-start">
+      {/* ================= IMAGENS ================= */}
+      <div className="flex gap-4">
 
-          {/* ================= IMAGENS ================= */}
-          <div className="flex gap-4">
+        {/* THUMBNAILS (igual Zafira) */}
+        <div className="flex flex-col gap-3 max-h-[500px] overflow-y-auto pr-1">
+          {selectedColor.images.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentImageIndex(i)}
+              className={`border rounded overflow-hidden ${
+                i === currentImageIndex
+                  ? 'border-black'
+                  : 'border-gray-200 opacity-70 hover:opacity-100'
+              }`}
+            >
+              <img
+                src={img}
+                className="w-16 h-20 object-cover"
+              />
+            </button>
+          ))}
+        </div>
 
-            {/* thumbnails */}
-            <div className="flex flex-col gap-3">
-              {selectedColor.images.map((img, i) => (
-                <button key={i} onClick={() => setCurrentImageIndex(i)}>
-                  <img
-                    src={img}
-                    className={`w-20 h-24 object-cover border rounded ${
-                      i === currentImageIndex
-                        ? 'border-black'
-                        : 'border-gray-200 opacity-70 hover:opacity-100'
-                    }`}
-                  />
-                </button>
-              ))}
+        {/* IMAGEM PRINCIPAL */}
+        <div className="relative w-[400px] h-[520px] bg-white border rounded-lg overflow-hidden group">
+          {currentImage ? (
+            <Image
+              src={currentImage}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <ImageIcon />
             </div>
+          )}
 
-            {/* imagem principal */}
-            <div className="relative w-full aspect-[3/4] bg-white border rounded-lg overflow-hidden group">
-              {currentImage ? (
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <ImageIcon />
-                </div>
-              )}
+          {/* SETAS */}
+          {selectedColor.images.length > 1 && (
+            <>
+              <button
+                onClick={() =>
+                  setCurrentImageIndex(prev =>
+                    prev === 0
+                      ? selectedColor.images.length - 1
+                      : prev - 1
+                  )
+                }
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
+              >
+                <ChevronLeft size={16} />
+              </button>
 
-              {selectedColor.images.length > 1 && (
-                <>
-                  <button
-                    onClick={() =>
-                      setCurrentImageIndex(prev =>
-                        prev === 0 ? selectedColor.images.length - 1 : prev - 1
-                      )
-                    }
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setCurrentImageIndex(prev =>
-                        prev === selectedColor.images.length - 1 ? 0 : prev + 1
-                      )
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+              <button
+                onClick={() =>
+                  setCurrentImageIndex(prev =>
+                    prev === selectedColor.images.length - 1
+                      ? 0
+                      : prev + 1
+                  )
+                }
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
           {/* ================= INFO ================= */}
           <div className="flex flex-col max-w-md">
@@ -172,33 +180,28 @@ export default function ProductPage() {
             <p className="text-sm text-gray-500 mt-1">
               ou 3x de {formatPrice(product.price / 3)} sem juros
             </p>
+            {/* OUTRAS CORES */}
+              <div className="mt-6">
+                <p className="text-sm font-medium mb-2">Outras cores:</p>
 
-            {/* CORES */}
-            <div className="mt-8">
-              <p className="text-sm font-medium mb-2">
-                Cor: {selectedColor.name}
-              </p>
-
-              <div className="flex gap-3">
-                {product.colors.map((color) => (
-                  <Link
-                    key={color.name}
-                    href={`/produto/${product.id}?cor=${color.name}`}
-                    onClick={() => {
-                      setSelectedColor(color)
-                      setCurrentImageIndex(0)
-                    }}
-                    className={`w-8 h-8 rounded-full border-2 ${
-                      selectedColor.name === color.name
-                        ? 'border-black scale-110'
-                        : 'border-gray-300'
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                  />
-                ))}
+                <div className="flex gap-2 flex-wrap">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => {
+                        setSelectedColor(color)
+                        setCurrentImageIndex(0)
+                      }}
+                      className={`w-10 h-10 rounded-full border-2 ${
+                        selectedColor.name === color.name
+                          ? 'border-black scale-110'
+                          : 'border-gray-300'
+                      }`}
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-
             {/* TAMANHOS */}
             <div className="mt-8">
               <p className="text-sm font-medium mb-2">Tamanho</p>
@@ -235,6 +238,7 @@ export default function ProductPage() {
                 <span className="px-4">{quantity}</span>
 
                 <button
+                
                   onClick={() => setQuantity(quantity + 1)}
                   className="px-3 py-2 hover:bg-gray-100"
                 >
@@ -247,13 +251,15 @@ export default function ProductPage() {
             <button className="mt-8 w-full bg-black text-white py-4 font-semibold hover:bg-gray-800">
               Adicionar ao carrinho
             </button>
-
           </div>
         </div>
+        
 
         {/* DESCRIÇÃO */}
         <div className="mt-16 max-w-3xl">
-          <h2 className="text-lg font-semibold mb-4">Descrição do produto</h2>
+          <h2 className="text-xl font-semibold mb-6 border-b pb-2">
+            Descrição do produto
+          </h2>
           <p className="text-gray-600">{product.description}</p>
         </div>
 
@@ -261,5 +267,6 @@ export default function ProductPage() {
 
       <StoreFooter />
     </div>
+    
   )
 }
