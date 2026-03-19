@@ -36,11 +36,15 @@ export default function ProductPage() {
       .eq('id', id)
       .single()
 
-    if (error) return console.error(error)
+    if (error) {
+      console.error(error)
+      return
+    }
 
     const formatted = formatProduct(data)
     setProduct(formatted)
 
+    // selecionar cor pela URL ou primeira
     if (formatted.colors.length > 0) {
       const found = formatted.colors.find(
         (c: ProductColor) => c.name === colorParam
@@ -48,11 +52,13 @@ export default function ProductPage() {
       setSelectedColor(found || formatted.colors[0])
     }
 
+    // tamanho padrão
     if (formatted.sizes.length > 0) {
       setSelectedSize(formatted.sizes[0])
     }
   }
 
+  // reset imagem ao trocar cor
   useEffect(() => {
     setCurrentImageIndex(0)
   }, [selectedColor])
@@ -81,7 +87,6 @@ export default function ProductPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <StoreHeader />
 
-      {/* 🔥 largura aumentada */}
       <main className="flex-1 max-w-[1400px] mx-auto px-6 py-10">
 
         {/* breadcrumb */}
@@ -91,13 +96,12 @@ export default function ProductPage() {
           <span className="text-black">{product.name}</span>
         </div>
 
-        {/* layout principal */}
         <div className="grid lg:grid-cols-2 gap-12 items-start">
 
           {/* ================= IMAGENS ================= */}
           <div className="flex gap-4">
 
-            {/* thumbnails lateral */}
+            {/* thumbnails */}
             <div className="flex flex-col gap-3">
               {selectedColor.images.map((img, i) => (
                 <button key={i} onClick={() => setCurrentImageIndex(i)}>
@@ -113,7 +117,7 @@ export default function ProductPage() {
               ))}
             </div>
 
-            {/* imagem principal maior */}
+            {/* imagem principal */}
             <div className="relative w-full aspect-[3/4] bg-white border rounded-lg overflow-hidden group">
               {currentImage ? (
                 <Image
@@ -132,7 +136,7 @@ export default function ProductPage() {
                 <>
                   <button
                     onClick={() =>
-                      setCurrentImageIndex((prev) =>
+                      setCurrentImageIndex(prev =>
                         prev === 0 ? selectedColor.images.length - 1 : prev - 1
                       )
                     }
@@ -143,7 +147,7 @@ export default function ProductPage() {
 
                   <button
                     onClick={() =>
-                      setCurrentImageIndex((prev) =>
+                      setCurrentImageIndex(prev =>
                         prev === selectedColor.images.length - 1 ? 0 : prev + 1
                       )
                     }
@@ -154,15 +158,12 @@ export default function ProductPage() {
                 </>
               )}
             </div>
-
           </div>
 
           {/* ================= INFO ================= */}
           <div className="flex flex-col max-w-md">
 
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {product.name}
-            </h1>
+            <h1 className="text-3xl font-semibold">{product.name}</h1>
 
             <p className="text-3xl font-bold mt-4">
               {formatPrice(product.price)}
@@ -183,6 +184,10 @@ export default function ProductPage() {
                   <Link
                     key={color.name}
                     href={`/produto/${product.id}?cor=${color.name}`}
+                    onClick={() => {
+                      setSelectedColor(color)
+                      setCurrentImageIndex(0)
+                    }}
                     className={`w-8 h-8 rounded-full border-2 ${
                       selectedColor.name === color.name
                         ? 'border-black scale-110'
@@ -203,7 +208,7 @@ export default function ProductPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 border text-sm font-medium ${
+                    className={`px-4 py-2 border ${
                       selectedSize === size
                         ? 'bg-black text-white border-black'
                         : 'border-gray-300 hover:border-black'
@@ -239,19 +244,17 @@ export default function ProductPage() {
             </div>
 
             {/* BOTÃO */}
-            <button className="mt-8 w-full bg-black text-white py-4 text-sm font-semibold hover:bg-gray-800 transition">
+            <button className="mt-8 w-full bg-black text-white py-4 font-semibold hover:bg-gray-800">
               Adicionar ao carrinho
             </button>
 
           </div>
         </div>
 
-        {/* 🔥 DESCRIÇÃO ABAIXO */}
+        {/* DESCRIÇÃO */}
         <div className="mt-16 max-w-3xl">
           <h2 className="text-lg font-semibold mb-4">Descrição do produto</h2>
-          <p className="text-gray-600 leading-relaxed">
-            {product.description}
-          </p>
+          <p className="text-gray-600">{product.description}</p>
         </div>
 
       </main>

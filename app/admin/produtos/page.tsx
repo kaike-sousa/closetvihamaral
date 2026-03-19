@@ -55,6 +55,7 @@ export default function AdminProductsPage() {
     featured: false
   })
 
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [activeColorTab, setActiveColorTab] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -184,35 +185,46 @@ const handleDelete = async (id: string) => {
 
   if (!error) fetchProducts()
 }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+  if (editingProduct) {
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+    // 1. Atualiza produto
+    const { error } = await supabase
+      .from('produtos')
+      .update({
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        featured: formData.featured
+      })
+      .eq('id', editingProduct.id)
 
-  // 1. Criar produto
-  const { data: product, error: productError } = await supabase
-    .from('produtos')
-    .insert({
-      name: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      category: formData.category,
-      featured: formData.featured
-    })
-    .select()
-    .single()
+    if (error) {
+      console.error(error)
+      return
+    }
 
-  if (productError || !product) {
-    console.error(productError)
-    return
-  }
+    // 2. APAGA variantes antigas
+    await supabase
+      .from('produto_variantes')
+      .delete()
+      .eq('produto_id', editingProduct.id)
 
-    // 2. Variantes
+    // 3. APAGA imagens antigas
+    await supabase
+      .from('produto_imagens')
+      .delete()
+      .eq('produto_id', editingProduct.id)
+
+    // 4. RECRIA variantes
     const variantes = []
 
     for (const color of formData.colors) {
       for (const size of formData.sizes) {
         variantes.push({
-          produto_id: product.id,
+          produto_id: editingProduct.id,
           color: color.name,
           size,
           stock: 10
@@ -224,13 +236,13 @@ const handleSubmit = async (e: React.FormEvent) => {
       await supabase.from('produto_variantes').insert(variantes)
     }
 
-    // 3. Imagens
+    // 5. RECRIA imagens
     const imagens: Omit<ProductImage, 'id'>[] = []
 
     for (const color of formData.colors) {
       color.images.forEach((img, index) => {
         imagens.push({
-          produto_id: product.id,
+          produto_id: editingProduct.id,
           color: color.name,
           image_url: img,
           position: index
@@ -241,15 +253,52 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (imagens.length) {
       await supabase.from('produto_imagens').insert(imagens)
     }
+  }
 
-    // 4. Atualizar
     await fetchProducts()
     setShowModal(false)
     resetForm()
+    setEditingProduct(null)
   }
 
   const activeColor = formData.colors.find(c => c.name === activeColorTab)
 
+
+    const handleEdit = (product: Product) => {
+    setEditingProduct(product)
+
+    // montar cores + imagens corretamente
+    const colorsMap: Record<string, ColorWithImages> = {}
+
+    product.produto_imagens.forEach(img => {
+      if (!colorsMap[img.color]) {
+        const colorData = AVAILABLE_COLORS.find(c => c.name === img.color)
+
+        colorsMap[img.color] = {
+          name: img.color,
+          hex: colorData?.hex || '#000',
+          images: []
+        }
+      }
+
+      colorsMap[img.color].images.push(img.image_url)
+    })
+
+    const colors = Object.values(colorsMap)
+
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      category: product.category as Category,
+      sizes: [...new Set(product.produto_variantes.map(v => v.size))],
+      colors,
+      featured: product.featured
+    })
+
+    setActiveColorTab(colors[0]?.name || null)
+    setShowModal(true)
+  }
   return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -342,7 +391,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 rounded-lg hover:bg-muted transition-colors">
+                        <button 
+                                onClick={() => handleEdit(product)}
+                                className="p-2 rounded-lg hover:bg-muted transition-colors"
+                              >
                           <Pencil className="h-4 w-4 text-muted-foreground" />
                         </button>
                         <button 
