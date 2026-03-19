@@ -32,7 +32,7 @@ function ProductsContent() {
         produto_variantes(*)
       `)
 
-    // 🔥 FILTRO DINÂMICO (corrigido)
+    // FILTRO DINÂMICO (corrigido)
     if (category !== 'todos') {
       query = query.eq('category', category)
     }

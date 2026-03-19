@@ -1,9 +1,5 @@
     "use client"
 
-    import { ShoppingCart } from "lucide-react"
-    import { Button } from "@/components/ui/button"
-    import { Card, CardContent, CardFooter } from "@/components/ui/card"
-    import { useCart } from "@/hooks/use-cart"
     import Link from "next/link"
 
     export interface ProductCardData {
@@ -19,57 +15,29 @@
     }
 
     export function ProductCard({ product }: ProductCardProps) {
-    const { addItem } = useCart()
-
-    const handleAddToCart = () => {
-        addItem({
-        id: Number(product.id),
-        name: product.name,
-        price: product.price,
-        image: product.image
-        })
-    }
-
     return (
-        <Card className="group border-none shadow-none bg-transparent">
-
+        <Link href={`/produto/${product.id}`} className="group block">
+        
         {/* IMAGEM */}
-        <CardContent className="p-0 relative">
-            <Link href={`/produtos/${product.id}`}>
-            <div className="relative overflow-hidden aspect-[3/4] rounded-lg cursor-pointer">
-                <img
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-            </div>
-            </Link>
-        </CardContent>
+        <div className="relative overflow-hidden aspect-[3/4] bg-gray-100">
+            <img
+            src={product.image || "/placeholder.svg"}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+        </div>
 
-        {/* INFORMAÇÕES */}
-        <CardFooter className="flex flex-col items-center gap-2 pt-3">
-
-            <Link href={`/produtos/${product.id}`}>
-            <h3 className="text-sm font-semibold text-center text-gray-800 hover:text-black transition-colors">
-                {product.name}
+        {/* INFO */}
+        <div className="mt-4 space-y-2 px-1">
+            <h3 className="text-base text-gray-700 font-medium leading-snug group-hover:text-black transition-colors">
+            {product.name}
             </h3>
-            </Link>
 
-            <p className="text-base font-bold text-black">
+            <p className="text-base text-gray-900 font-semibold">
             R$ {product.price.toFixed(2).replace(".", ",")}
             </p>
+        </div>
 
-            <Button
-            className="w-full bg-black hover:bg-gray-900 text-white rounded-md py-2 mt-1 text-sm font-medium tracking-wide"
-            onClick={handleAddToCart}
-            >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Comprar
-            </Button>
-
-        </CardFooter>
-
-        </Card>
+        </Link>
     )
     }
