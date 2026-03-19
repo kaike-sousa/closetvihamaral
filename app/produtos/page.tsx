@@ -24,33 +24,66 @@ function ProductsContent() {
   const fetchProducts = async () => {
     setLoading(true)
 
-    let query = supabase.from('produtos').select('*')
+    let query = supabase
+      .from('produtos')
+      .select(`
+        *,
+        produto_imagens(*),
+        produto_variantes(*)
+      `)
 
+    // 🔥 FILTRO DINÂMICO (corrigido)
     if (category !== 'todos') {
-      query = query.eq('categoria', category)
+      query = query.eq('category', category)
     }
 
     const { data, error } = await query
 
     if (error) {
       console.error('Erro ao buscar produtos:', error)
-    } else {
-      setProducts(data || [])
+      setLoading(false)
+      return
     }
 
+    // 🔥 TRANSFORMAÇÃO SEGURA
+    const formattedProducts = (data || []).map((product: any) => {
+      const colorsMap: any = {}
+
+      product.produto_imagens?.forEach((img: any) => {
+        if (!colorsMap[img.color]) {
+          colorsMap[img.color] = {
+            name: img.color,
+            images: []
+          }
+        }
+
+        colorsMap[img.color].images.push(img.image_url)
+      })
+
+      return {
+        ...product,
+        colors: Object.values(colorsMap),
+        produto_imagens: product.produto_imagens || [],
+        produto_variantes: product.produto_variantes || []
+      }
+    })
+
+    setProducts(formattedProducts)
     setLoading(false)
   }
 
-  const currentCategory = CATEGORIES.find(c => c.value === category)
-
   return (
     <>
-      {/* Category Filter */}
+      {/* FILTRO DE CATEGORIA */}
       <div className="flex flex-wrap gap-2 mb-8">
         {CATEGORIES.map((cat) => (
           <Link
             key={cat.value}
-            href={cat.value === 'todos' ? '/produtos' : `/produtos?categoria=${cat.value}`}
+            href={
+              cat.value === 'todos'
+                ? '/produtos'
+                : `/produtos?categoria=${cat.value}`
+            }
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               category === cat.value
                 ? 'bg-foreground text-background'
@@ -62,7 +95,7 @@ function ProductsContent() {
         ))}
       </div>
 
-      {/* Products Info */}
+      {/* LISTAGEM */}
       {loading ? (
         <div className="py-16 text-center text-muted-foreground">
           Carregando produtos...
@@ -70,7 +103,10 @@ function ProductsContent() {
       ) : (
         <>
           <div className="mb-6 text-sm text-muted-foreground">
-            {products.length} {products.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+            {products.length}{' '}
+            {products.length === 1
+              ? 'produto encontrado'
+              : 'produtos encontrados'}
           </div>
 
           {products.length === 0 ? (
@@ -100,9 +136,11 @@ export default function ProductsPage() {
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
 
-          {/* Breadcrumb */}
+          {/* BREADCRUMB */}
           <nav className="mb-6 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">Início</Link>
+            <Link href="/" className="hover:text-foreground">
+              Início
+            </Link>
             <span className="mx-2">/</span>
             <span>Produtos</span>
           </nav>
@@ -111,7 +149,13 @@ export default function ProductsPage() {
             Nossos Produtos
           </h1>
 
-          <Suspense fallback={<div className="py-16 text-center text-muted-foreground">Carregando...</div>}>
+          <Suspense
+            fallback={
+              <div className="py-16 text-center text-muted-foreground">
+                Carregando...
+              </div>
+            }
+          >
             <ProductsContent />
           </Suspense>
 

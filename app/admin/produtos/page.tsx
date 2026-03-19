@@ -188,7 +188,8 @@ const handleDelete = async (id: string) => {
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
 
-  const { error } = await supabase
+  // 1. Criar produto
+  const { data: product, error: productError } = await supabase
     .from('produtos')
     .insert({
       name: formData.name,
@@ -197,16 +198,55 @@ const handleSubmit = async (e: React.FormEvent) => {
       category: formData.category,
       featured: formData.featured
     })
+    .select()
+    .single()
 
-  if (error) {
-    console.error(error)
+  if (productError || !product) {
+    console.error(productError)
     return
   }
 
-  await fetchProducts()
-  setShowModal(false)
-  resetForm()
-}
+    // 2. Variantes
+    const variantes = []
+
+    for (const color of formData.colors) {
+      for (const size of formData.sizes) {
+        variantes.push({
+          produto_id: product.id,
+          color: color.name,
+          size,
+          stock: 10
+        })
+      }
+    }
+
+    if (variantes.length) {
+      await supabase.from('produto_variantes').insert(variantes)
+    }
+
+    // 3. Imagens
+    const imagens: Omit<ProductImage, 'id'>[] = []
+
+    for (const color of formData.colors) {
+      color.images.forEach((img, index) => {
+        imagens.push({
+          produto_id: product.id,
+          color: color.name,
+          image_url: img,
+          position: index
+        })
+      })
+    }
+
+    if (imagens.length) {
+      await supabase.from('produto_imagens').insert(imagens)
+    }
+
+    // 4. Atualizar
+    await fetchProducts()
+    setShowModal(false)
+    resetForm()
+  }
 
   const activeColor = formData.colors.find(c => c.name === activeColorTab)
 
@@ -245,10 +285,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <tr key={product.id} className="border-b border-border last:border-0 hover:bg-muted/30">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        product.colors?.[0]?.images?.[0] ? (
+                        {product.produto_imagens?.[0]?.image_url ? (
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
                             <Image
-                              src={product.colors[0].images[0]}
+                              src={product.produto_imagens[0].image_url}
                               alt={product.name}
                               fill
                               className="object-cover"
@@ -259,6 +299,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                             <ImageIcon className="h-5 w-5 text-muted-foreground" />
                           </div>
                         )}
+
                         <div>
                           <p className="font-medium text-sm">{product.name}</p>
                           {product.featured && (
@@ -269,23 +310,34 @@ const handleSubmit = async (e: React.FormEvent) => {
                     </td>
                     <td className="p-4 text-sm">{getCategoryLabel(product.category)}</td>
                     <td className="p-4 text-sm font-medium">{formatCurrency(product.price)}</td>
-                    <td className="p-4 text-sm text-muted-foreground">{product.sizes.join(', ')}</td>
+                    <td className="p-4 text-sm text-muted-foreground">
+                    {[...new Set(product.produto_variantes.map(v => v.size))].join(', ')}
+                  </td>
                     <td className="p-4">
                       <div className="flex gap-1">
-                        {product.colors.map((color) => (
-                          <div
-                            key={color.name}
-                            className="w-5 h-5 rounded-full border border-border relative group"
-                            style={{ backgroundColor: color.hex }}
-                            title={`${color.name} (${color.images.length} imagens)`}
-                          >
-                            {color.images.length > 0 && (
-                              <span className="absolute -top-1 -right-1 w-3 h-3 bg-foreground text-background text-[8px] rounded-full flex items-center justify-center">
-                                {color.images.length}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                        {product.produto_imagens?.length > 0 ? (
+                          [...new Set(product.produto_imagens.map(img => img.color))].map((colorName) => {
+                            const colorData = AVAILABLE_COLORS.find(c => c.name === colorName)
+                            const imagesCount = product.produto_imagens.filter(img => img.color === colorName).length
+
+                            return (
+                              <div
+                                key={colorName}
+                                className="w-5 h-5 rounded-full border border-border relative group"
+                                style={{ backgroundColor: colorData?.hex || '#ccc' }}
+                                title={`${colorName} (${imagesCount} imagens)`}
+                              >
+                                {imagesCount > 0 && (
+                                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-foreground text-background text-[8px] rounded-full flex items-center justify-center">
+                                    {imagesCount}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Sem cores</span>
+                        )}
                       </div>
                     </td>
                     <td className="p-4">
