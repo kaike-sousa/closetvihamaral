@@ -79,80 +79,90 @@
 
         router.push('/admin/login')
     }
-
+    
     return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fdf2f8] via-white to-[#fce7f3] p-6">
 
-        <div className="min-h-screen flex items-center justify-center bg-muted p-6">
+        <div className="w-full max-w-2xl bg-white/70 backdrop-blur-2xl border border-gray-200/60 p-10 rounded-3xl shadow-2xl">
 
-        <div className="w-full max-w-lg bg-background p-8 rounded-xl shadow">
-
-            <h1 className="text-2xl font-semibold text-center mb-6">
+        {/* HEADER */}
+        <div className="text-center mb-8">
+            <h1 className="text-3xl font-semibold text-gray-900">
             Criar Conta
             </h1>
-
-            {error && (
-            <p className="text-red-500 text-sm mb-4">
-                {error}
+            <p className="text-sm text-gray-500 mt-2">
+            Preencha seus dados para continuar
             </p>
-            )}
+        </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-lg mb-6">
+            {error}
+            </div>
+        )}
 
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* NOME */}
             <div className="grid grid-cols-2 gap-4">
-
-                <input
+            <input
                 name="nome"
                 placeholder="Nome"
                 onChange={handleChange}
                 required
-                className="input"
-                />
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
+            />
 
-                <input
+            <input
                 name="sobrenome"
                 placeholder="Sobrenome"
                 onChange={handleChange}
                 required
-                className="input"
-                />
-
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
+            />
             </div>
 
+            {/* EMAIL */}
             <input
-                name="email"
-                type="email"
-                placeholder="Email"
-                onChange={handleChange}
-                required
-                className="input"
+            name="email"
+            type="email"
+            placeholder="Email"
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
 
+            {/* NASCIMENTO + GENERO */}
+            <div className="grid grid-cols-2 gap-4">
             <input
                 name="nascimento"
                 type="date"
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
 
             <select
                 name="genero"
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition text-gray-600"
             >
-                <option value="">Selecione o gênero</option>
+                <option value="">Gênero</option>
                 <option value="feminino">Feminino</option>
                 <option value="masculino">Masculino</option>
                 <option value="outro">Outro</option>
             </select>
+            </div>
 
+            {/* CPF + TELEFONE */}
+            <div className="grid grid-cols-2 gap-4">
             <input
                 name="cpf"
                 placeholder="CPF"
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
 
             <input
@@ -160,24 +170,28 @@
                 placeholder="Telefone"
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
+            </div>
 
+            {/* ENDEREÇO */}
             <input
-                name="endereco"
-                placeholder="Endereço completo"
-                onChange={handleChange}
-                required
-                className="input"
+            name="endereco"
+            placeholder="Endereço completo"
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
 
+            {/* SENHAS */}
+            <div className="grid grid-cols-2 gap-4">
             <input
                 name="senha"
                 type="password"
                 placeholder="Senha"
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
 
             <input
@@ -186,29 +200,31 @@
                 placeholder="Confirmar senha"
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-black/20 focus:border-black outline-none transition"
             />
-
-            <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-black text-white py-3 rounded"
-            >
-                {loading ? 'Criando conta...' : 'Criar conta'}
-            </button>
-
-            </form>
-
-            <div className="text-center mt-6 text-sm">
-            Já possui conta?{' '}
-            <Link href="/admin/login" className="underline">
-                Entrar
-            </Link>
             </div>
 
+            {/* BOTÃO */}
+            <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-black/90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+            >
+            {loading ? 'Criando conta...' : 'Criar conta'}
+            </button>
+
+        </form>
+
+        {/* LOGIN */}
+        <div className="text-center mt-8 text-sm text-gray-600">
+            Já possui conta?{" "}
+            <Link href="/admin/login" className="font-medium text-black hover:underline">
+            Entrar
+            </Link>
         </div>
 
         </div>
 
+    </div>
     )
     }

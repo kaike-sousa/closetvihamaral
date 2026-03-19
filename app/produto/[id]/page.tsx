@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, Minus, Plus, ChevronRight, ImageIcon } from 'lucide-react'
@@ -10,10 +10,11 @@ import { StoreFooter } from '@/components/store/footer'
 import { Product, ProductColor } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import { formatProduct } from '@/lib/formatProducts'
-import { use } from 'react'
 
-export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function ProductPage() {
+  const params = useParams()
+  const id = params.id as string
+
   const searchParams = useSearchParams()
   const colorParam = searchParams.get('cor')
 
@@ -30,38 +31,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const fetchProduct = async () => {
     const { data, error } = await supabase
       .from('produtos')
-      .select(`
-        *,
-        produto_imagens(*),
-        produto_variantes(*)
-      `)
+      .select(`*, produto_imagens(*), produto_variantes(*)`)
       .eq('id', id)
       .single()
 
-    if (error) {
-      console.error('Erro ao buscar produto:', error)
-      return
-    }
+    if (error) return console.error(error)
 
-    const formatted: Product = formatProduct(data)
+    const formatted = formatProduct(data)
     setProduct(formatted)
 
-    // CORES 
-    if (formatted.colors?.length > 0) {
-      if (colorParam) {
-        const found = formatted.colors.find(c => c.name === colorParam)
-        setSelectedColor(found || formatted.colors[0])
-      } else {
-        setSelectedColor(formatted.colors[0])
-      }
+    // cor inicial
+    if (formatted.colors.length > 0) {
+      const found = formatted.colors.find(
+        (c: ProductColor) => c.name === colorParam
+      )
+      setSelectedColor(found || formatted.colors[0])
     }
 
-    // TAMANHOS
-    if (formatted.sizes?.length > 0) {
+    // tamanho inicial
+    if (formatted.sizes.length > 0) {
       setSelectedSize(formatted.sizes[0])
     }
-
-    setCurrentImageIndex(0)
   }
 
   useEffect(() => {
@@ -74,128 +64,172 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       currency: 'BRL'
     }).format(price)
 
-  const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      saias: 'Saias',
-      conjuntos: 'Conjuntos',
-      vestidos: 'Vestidos',
-      cropped: 'Cropped',
-      bodys: 'Bodys',
-      calcas: 'Calças'
-    }
-    return labels[category] || category
-  }
-
-  const nextImage = () => {
-    if (!selectedColor?.images?.length) return
-    setCurrentImageIndex((prev) =>
-      prev === selectedColor.images.length - 1 ? 0 : prev + 1
-    )
-  }
-
-  const prevImage = () => {
-    if (!selectedColor?.images?.length) return
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? selectedColor.images.length - 1 : prev - 1
-    )
-  }
-
   if (!product || !selectedColor) {
     return (
       <div className="min-h-screen flex flex-col">
         <StoreHeader />
         <main className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">Produto não encontrado.</p>
+          Produto não encontrado
         </main>
         <StoreFooter />
       </div>
     )
   }
 
-  const hasImages = selectedColor.images?.length > 0
-  const currentImage = hasImages ? selectedColor.images[currentImageIndex] : null
+  const currentImage = selectedColor.images[currentImageIndex]
 
   return (
     <div className="min-h-screen flex flex-col">
       <StoreHeader />
 
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
 
-          {/* Breadcrumb */}
-          <nav className="mb-6 text-sm text-muted-foreground flex gap-2">
-            <Link href="/">Início</Link>
-            <span>/</span>
-            <Link href="/produtos">Produtos</Link>
-            <span>/</span>
-            <Link href={`/produtos?categoria=${product.category}`}>
-              {getCategoryLabel(product.category)}
-            </Link>
-            <span>/</span>
-            <span className="text-foreground">{product.name}</span>
-          </nav>
+        {/* breadcrumb */}
+        <div className="text-sm text-muted-foreground mb-6 flex gap-2">
+          <Link href="/">Início</Link> /
+          <Link href="/produtos">Produtos</Link> /
+          <span>{product.name}</span>
+        </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-10">
 
-            {/* IMAGENS */}
-            <div>
-              <div className="relative aspect-[3/4] rounded-lg bg-muted overflow-hidden">
-                {currentImage ? (
-                  <Image
-                    src={currentImage}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <ImageIcon />
-                  </div>
-                )}
-              </div>
-
-              {hasImages && selectedColor.images.length > 1 && (
-                <div className="flex gap-2 mt-2">
-                  {selectedColor.images.map((img, i) => (
-                    <button key={i} onClick={() => setCurrentImageIndex(i)}>
-                      <img src={img} className="w-16 h-20 object-cover" />
-                    </button>
-                  ))}
+          {/* IMAGENS */}
+          <div>
+            <div className="relative aspect-[3/4] bg-muted rounded-xl overflow-hidden group">
+              {currentImage ? (
+                <Image src={currentImage} alt={product.name} fill className="object-cover" />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <ImageIcon />
                 </div>
+              )}
+
+              {/* setas */}
+              {selectedColor.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() =>
+                      setCurrentImageIndex((prev) =>
+                        prev === 0 ? selectedColor.images.length - 1 : prev - 1
+                      )
+                    }
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setCurrentImageIndex((prev) =>
+                        prev === selectedColor.images.length - 1 ? 0 : prev + 1
+                      )
+                    }
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </>
               )}
             </div>
 
-            {/* INFO */}
-            <div>
-              <h1 className="text-2xl font-semibold">{product.name}</h1>
-              <p className="text-xl mt-2">{formatPrice(product.price)}</p>
+            {/* thumbnails */}
+            <div className="flex gap-2 mt-3">
+              {selectedColor.images.map((img, i) => (
+                <button key={i} onClick={() => setCurrentImageIndex(i)}>
+                  <img
+                    src={img}
+                    className={`w-16 h-20 object-cover rounded border ${
+                      i === currentImageIndex ? 'border-black' : ''
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
 
-              {/* CORES */}
-              <div className="mt-6 flex gap-2">
-                {product.colors?.map((color) => (
+          {/* INFO */}
+          <div className="flex flex-col">
+
+            <h1 className="text-3xl font-semibold">{product.name}</h1>
+
+            <p className="text-2xl font-bold mt-3">
+              {formatPrice(product.price)}
+            </p>
+
+            <p className="text-sm text-muted-foreground">
+              ou 3x de {formatPrice(product.price / 3)} sem juros
+            </p>
+
+            {/* descrição */}
+            <p className="mt-6 text-muted-foreground">
+              {product.description}
+            </p>
+
+            {/* CORES */}
+            <div className="mt-8">
+              <p className="text-sm font-medium mb-2">
+                Cor: {selectedColor.name}
+              </p>
+
+              <div className="flex gap-3">
+                {product.colors.map((color) => (
                   <Link
                     key={color.name}
                     href={`/produto/${product.id}?cor=${color.name}`}
-                    className="w-8 h-8 rounded-full border"
+                    className={`w-10 h-10 rounded-full border-2 ${
+                      selectedColor.name === color.name
+                        ? 'border-black scale-110'
+                        : 'border-gray-300'
+                    }`}
                     style={{ backgroundColor: color.hex }}
                   />
                 ))}
               </div>
+            </div>
 
-              {/* TAMANHOS */}
-              <div className="mt-6 flex gap-2">
-                {product.sizes?.map((size) => (
+            {/* TAMANHOS */}
+            <div className="mt-8">
+              <p className="text-sm font-medium mb-2">Tamanho</p>
+
+              <div className="flex gap-2">
+                {product.sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className="border px-3 py-1"
+                    className={`px-4 py-2 border rounded ${
+                      selectedSize === size
+                        ? 'bg-black text-white'
+                        : 'hover:border-black'
+                    }`}
                   >
                     {size}
                   </button>
                 ))}
               </div>
-
             </div>
+
+            {/* QUANTIDADE */}
+            <div className="mt-8">
+              <p className="text-sm font-medium mb-2">Quantidade</p>
+
+              <div className="flex items-center gap-4">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                  <Minus />
+                </button>
+
+                <span>{quantity}</span>
+
+                <button onClick={() => setQuantity(quantity + 1)}>
+                  <Plus />
+                </button>
+              </div>
+            </div>
+
+            {/* BOTÃO */}
+            <button className="mt-8 w-full bg-black text-white py-4 rounded-lg font-medium hover:opacity-90">
+              Adicionar ao carrinho
+            </button>
+
           </div>
         </div>
       </main>
