@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X, ShoppingBag, User, Search } from 'lucide-react'
 import { CATEGORIES } from '@/lib/types'
+import { useCart } from '@/context/cart-context'
 
 export function StoreHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { cart } = useCart()
+  const totalItens = cart.length
 
   const messages = [
     "| Enviamos para TODO O BRASIL |",
@@ -15,6 +18,7 @@ export function StoreHeader() {
     "| Parcelamento em até 3x sem juros |",
     "| Lançamentos novos todos os meses! |",
   ]
+
 
   return (
     <header className="sticky top-0 z-50">
@@ -101,12 +105,17 @@ export function StoreHeader() {
               </Link>
 
               {/* Carrinho */}
-              <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-foreground text-background text-xs flex items-center justify-center">
-                  0
-                </span>
-              </button>
+              <Link href="/carrinho">
+                <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
+                  <ShoppingBag className="h-5 w-5" />
+                  
+                  {totalItens > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#b5518f] text-white text-[10px] flex items-center justify-center animate-in fade-in zoom-in duration-300">
+                      {totalItens}
+                    </span>
+                  )}
+                </button>
+              </Link>
 
               {/* Menu mobile */}
               <button
