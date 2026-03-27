@@ -19,9 +19,10 @@ export default function AdminCustomersPage() {
 
   const [customers, setCustomers] = useState<Customer[]>([])
 
-  useEffect(() => {
+useEffect(() => {
     async function loadCustomers() {
-
+      const data = await getClientes() // Chama o serviço que busca no Supabase
+      setCustomers(data) // Salva os dados no estado para renderizar na tela
     }
 
     loadCustomers()
