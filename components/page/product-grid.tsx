@@ -54,7 +54,7 @@
         <div>
         <div className="text-center max-w-2xl mx-auto mb-6">
         <h2 className="font-serif text-4xl md:text-5xl font-bold mb-2 text-balance">
-            Você Precisa Conhecer
+            Best Sellers
         </h2>
         <p className="text-muted-foreground text-lg">
             Produtos que não podem ficar de fora da sacola🤩
