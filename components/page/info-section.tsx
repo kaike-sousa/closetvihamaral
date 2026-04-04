@@ -7,7 +7,7 @@
     {
         icon: "🎁",
         title: "PRIMEIRA COMPRA?",
-        description: 'Use o cupom "MARCONE10" para 10% OFF',
+        description: 'Envie a mensagem "VIH10" para 10% OFF',
     },
     {
         icon: "🚚",
