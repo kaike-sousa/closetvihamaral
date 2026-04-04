@@ -92,14 +92,6 @@ export default function AdminDashboardPage() {
           <h1 className="text-2xl font-semibold">Dashboard</h1>
           <p className="text-muted-foreground">Visão geral da sua loja</p>
         </div>
-
-        <Link 
-          href="/" 
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-background hover:bg-slate-50 text-sm font-medium transition-all active:scale-95 shadow-sm"
-        >
-          <ArrowLeft size={18} />
-          Voltar para a Loja
-        </Link>
       </div>
 
       {/* Stats Cards */}
