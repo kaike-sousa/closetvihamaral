@@ -1,666 +1,204 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { Plus, Pencil, Trash2, ImageIcon, AlertTriangle, Loader2, Search } from 'lucide-react'
 import Image from 'next/image'
-import { Plus, Pencil, Trash2, X, Upload, ImageIcon } from 'lucide-react'
-
 import { supabase } from '@/lib/supabase'
-import { CATEGORIES, SIZES, AVAILABLE_COLORS, Category } from '@/lib/types'
-
-interface ProductVariant {
-  id: string
-  produto_id: string
-  color: string
-  size: string
-  stock: number
-}
-
-interface ProductImage {
-  id: string
-  produto_id: string
-  color: string
-  image_url: string
-  position: number
-}
-
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  category: string
-  featured: boolean
-  produto_variantes: ProductVariant[]
-  produto_imagens: ProductImage[]
-}
-
-interface ColorWithImages {
-  name: string
-  hex: string
-  images: string[]
-}
+import { ProductFormModal } from '@/components/admin/ProductFormModal'
 
 export default function AdminProductsPage() {
-
-  const [products, setProducts] = useState<Product[]>([])
-  const [showModal, setShowModal] = useState(false)
-
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: 'vestidos' as Category,
-    sizes: [] as string[],
-    colors: [] as ColorWithImages[],
-    featured: false
-  })
-
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [activeColorTab, setActiveColorTab] = useState<string | null>(null)
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<any | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchProducts()
   }, [])
 
   async function fetchProducts() {
-    const { data, error } = await supabase
-      .from('produtos')
-      .select(`
-        *,
-        produto_variantes (*),
-        produto_imagens (*)
-      `)
-      .order('created_at', { ascending: false })
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('produtos')
+        .select(`*, produto_variantes (*), produto_imagens (*)`)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Erro ao buscar produtos:', error)
-      return
-    }
-
-    setProducts(data || [])
-  }
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value)
-  }
-
-  const getCategoryLabel = (category: string) => {
-    const cat = CATEGORIES.find(c => c.value === category)
-    return cat?.label || category
-  }
-
-  const handleSizeToggle = (size: string) => {
-    setFormData(prev => ({
-      ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
-    }))
-  }
-
-  const handleColorToggle = (colorName: string) => {
-  const color = AVAILABLE_COLORS.find(c => c.name === colorName)
-  if (!color) return
-
-  const exists = formData.colors.find(c => c.name === colorName)
-
-  if (exists) {
-    setFormData(prev => ({
-      ...prev,
-      colors: prev.colors.filter(c => c.name !== colorName)
-    }))
-  } else {
-    setFormData(prev => ({
-      ...prev,
-      colors: [...prev.colors, { name: color.name, hex: color.hex, images: [] }]
-    }))
-    setActiveColorTab(colorName)
-  }
-}
-
-const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files
-  if (!files || !activeColorTab) return
-
-  Array.from(files).forEach(file => {
-    const reader = new FileReader()
-
-    reader.onload = (event) => {
-      const imageUrl = event.target?.result as string
-
-      setFormData(prev => ({
-        ...prev,
-        colors: prev.colors.map(color =>
-          color.name === activeColorTab
-            ? { ...color, images: [...color.images, imageUrl] }
-            : color
-        )
-      }))
-    }
-
-    reader.readAsDataURL(file)
-  })
-
-  if (fileInputRef.current) {
-    fileInputRef.current.value = ''
-  }
-}
-
-const handleRemoveImage = (colorName: string, imageIndex: number) => {
-  setFormData(prev => ({
-    ...prev,
-    colors: prev.colors.map(color =>
-      color.name === colorName
-        ? { ...color, images: color.images.filter((_, i) => i !== imageIndex) }
-        : color
-    )
-  }))
-}
-
-const resetForm = () => {
-  setFormData({
-    name: '',
-    description: '',
-    price: '',
-    category: 'vestidos',
-    sizes: [],
-    colors: [],
-    featured: false
-  })
-  setActiveColorTab(null)
-}
-
-const handleDelete = async (id: string) => {
-  if (!window.confirm('Tem certeza que deseja excluir este produto?')) return
-
-  const { error } = await supabase
-    .from('produtos')
-    .delete()
-    .eq('id', id)
-
-  if (!error) fetchProducts()
-}
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-  if (editingProduct) {
-
-    // 1. Atualiza produto
-    const { error } = await supabase
-      .from('produtos')
-      .update({
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        category: formData.category,
-        featured: formData.featured
-      })
-      .eq('id', editingProduct.id)
-
-    if (error) {
-      console.error(error)
-      return
-    }
-
-    // 2. APAGA variantes antigas
-    await supabase
-      .from('produto_variantes')
-      .delete()
-      .eq('produto_id', editingProduct.id)
-
-    // 3. APAGA imagens antigas
-    await supabase
-      .from('produto_imagens')
-      .delete()
-      .eq('produto_id', editingProduct.id)
-
-    // 4. RECRIA variantes
-    const variantes = []
-
-    for (const color of formData.colors) {
-      for (const size of formData.sizes) {
-        variantes.push({
-          produto_id: editingProduct.id,
-          color: color.name,
-          size,
-          stock: 10
-        })
-      }
-    }
-
-    if (variantes.length) {
-      await supabase.from('produto_variantes').insert(variantes)
-    }
-
-    // 5. RECRIA imagens
-    const imagens: Omit<ProductImage, 'id'>[] = []
-
-    for (const color of formData.colors) {
-      color.images.forEach((img, index) => {
-        imagens.push({
-          produto_id: editingProduct.id,
-          color: color.name,
-          image_url: img,
-          position: index
-        })
-      })
-    }
-
-    if (imagens.length) {
-      await supabase.from('produto_imagens').insert(imagens)
+      if (error) throw error
+      setProducts(data || [])
+    } catch (err) {
+      console.error('Erro ao buscar produtos:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
-    await fetchProducts()
-    setShowModal(false)
-    resetForm()
-    setEditingProduct(null)
+  const handleDelete = async () => {
+    if (!productToDelete) return
+    setIsDeleting(true)
+    try {
+      const { error } = await supabase.from('produtos').delete().eq('id', productToDelete.id)
+      if (error) throw error
+      
+      await fetchProducts()
+      setProductToDelete(null)
+    } catch (err) {
+      console.error('Erro ao excluir:', err)
+      alert('Erro ao excluir produto. Verifique se existem pedidos vinculados a ele.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
-  const activeColor = formData.colors.find(c => c.name === activeColorTab)
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.category && p.category.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
 
-
-    const handleEdit = (product: Product) => {
-    setEditingProduct(product)
-
-    // montar cores + imagens corretamente
-    const colorsMap: Record<string, ColorWithImages> = {}
-
-    product.produto_imagens.forEach(img => {
-      if (!colorsMap[img.color]) {
-        const colorData = AVAILABLE_COLORS.find(c => c.name === img.color)
-
-        colorsMap[img.color] = {
-          name: img.color,
-          hex: colorData?.hex || '#000',
-          images: []
-        }
-      }
-
-      colorsMap[img.color].images.push(img.image_url)
-    })
-
-    const colors = Object.values(colorsMap)
-
-    setFormData({
-      name: product.name,
-      description: product.description,
-      price: product.price.toString(),
-      category: product.category as Category,
-      sizes: [...new Set(product.produto_variantes.map(v => v.size))],
-      colors,
-      featured: product.featured
-    })
-
-    setActiveColorTab(colors[0]?.name || null)
-    setShowModal(true)
-  }
   return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Produtos</h1>
-            <p className="text-muted-foreground">Gerencie os produtos da sua loja</p>
+    <div className="max-w-7xl mx-auto p-6 md:p-10 space-y-10">
+      {/* Header com Design Premium */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-100 pb-10">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-400">Inventory System</span>
+          <h1 className="text-5xl font-bold tracking-tighter mt-2">Catálogo</h1>
+          <p className="text-neutral-500 mt-2 font-medium">Gerencie o acervo da Closet Vih Amaral</p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="relative hidden sm:block">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+            <input 
+              type="text"
+              placeholder="Buscar peça..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 pr-6 py-4 bg-neutral-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-black transition-all w-64"
+            />
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-lg font-medium hover:bg-foreground/90 transition-colors"
+          <button 
+            onClick={() => { setSelectedProduct(null); setIsModalOpen(true); }} 
+            className="bg-black text-white px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-neutral-800 transition-all shadow-2xl shadow-black/20"
           >
-            <Plus className="h-4 w-4" />
-            Novo Produto
+            <Plus size={18} /> Nova Peça
           </button>
         </div>
+      </div>
 
-        {/* Products Table */}
-        <div className="bg-background rounded-xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Produto</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Categoria</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Preço</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tamanhos</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Cores</th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} className="border-b border-border last:border-0 hover:bg-muted/30">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        {product.produto_imagens?.[0]?.image_url ? (
-                          <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
-                            <Image
-                              src={product.produto_imagens[0].image_url}
-                              alt={product.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-
-                        <div>
-                          <p className="font-medium text-sm">{product.name}</p>
-                          {product.featured && (
-                            <span className="text-xs text-muted-foreground">Destaque</span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm">{getCategoryLabel(product.category)}</td>
-                    <td className="p-4 text-sm font-medium">{formatCurrency(product.price)}</td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                    {[...new Set(product.produto_variantes.map(v => v.size))].join(', ')}
-                  </td>
-                    <td className="p-4">
-                      <div className="flex gap-1">
-                        {product.produto_imagens?.length > 0 ? (
-                          [...new Set(product.produto_imagens.map(img => img.color))].map((colorName) => {
-                            const colorData = AVAILABLE_COLORS.find(c => c.name === colorName)
-                            const imagesCount = product.produto_imagens.filter(img => img.color === colorName).length
-
-                            return (
-                              <div
-                                key={colorName}
-                                className="w-5 h-5 rounded-full border border-border relative group"
-                                style={{ backgroundColor: colorData?.hex || '#ccc' }}
-                                title={`${colorName} (${imagesCount} imagens)`}
-                              >
-                                {imagesCount > 0 && (
-                                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-foreground text-background text-[8px] rounded-full flex items-center justify-center">
-                                    {imagesCount}
-                                  </span>
-                                )}
-                              </div>
-                            )
-                          })
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Sem cores</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                                onClick={() => handleEdit(product)}
-                                className="p-2 rounded-lg hover:bg-muted transition-colors"
-                              >
-                          <Pencil className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(product.id)}
-                          className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Grid de Produtos */}
+      {loading ? (
+        <div className="h-96 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="animate-spin text-neutral-300" size={40} />
+          <p className="text-xs font-black uppercase tracking-widest text-neutral-400">Carregando Acervo</p>
         </div>
-
-        {/* Add Product Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-background rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-background z-10">
-                <h2 className="text-lg font-semibold">Novo Produto</h2>
-                <button
-                  onClick={() => { setShowModal(false); resetForm(); }}
-                  className="p-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nome do Produto</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Ex: Vestido Midi Elegante"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Descrição</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    required
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                    placeholder="Descreva o produto..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Preço (R$)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      required
-                      className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      placeholder="0,00"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Categoria</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value as Category })}
-                      className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      {CATEGORIES.filter(c => c.value !== 'todos').map((cat) => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tamanhos Disponíveis</label>
-                  <div className="flex flex-wrap gap-2">
-                    {SIZES.map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => handleSizeToggle(size)}
-                        className={`w-12 h-12 rounded-lg border font-medium transition-colors ${
-                          formData.sizes.includes(size)
-                            ? 'border-foreground bg-foreground text-background'
-                            : 'border-border hover:border-foreground'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cores Disponíveis</label>
-                  <p className="text-xs text-muted-foreground mb-3">Selecione as cores e adicione imagens para cada uma</p>
-                  <div className="flex flex-wrap gap-3">
-                    {AVAILABLE_COLORS.map((color) => {
-                      const isSelected = formData.colors.some(c => c.name === color.name)
-                      const colorData = formData.colors.find(c => c.name === color.name)
-                      return (
-                        <button
-                          key={color.name}
-                          type="button"
-                          onClick={() => handleColorToggle(color.name)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                            isSelected
-                              ? 'border-foreground bg-muted'
-                              : 'border-border hover:border-foreground'
-                          }`}
-                        >
-                          <span
-                            className="w-5 h-5 rounded-full border border-border"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          <span className="text-sm">{color.name}</span>
-                          {colorData && colorData.images.length > 0 && (
-                            <span className="bg-foreground text-background text-xs px-1.5 py-0.5 rounded-full">
-                              {colorData.images.length}
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Tabs de cores selecionadas para upload de imagens */}
-                {formData.colors.length > 0 && (
-                  <div className="border border-border rounded-xl overflow-hidden">
-                    <div className="flex border-b border-border bg-muted/30 overflow-x-auto">
-                      {formData.colors.map((color) => (
-                        <button
-                          key={color.name}
-                          type="button"
-                          onClick={() => setActiveColorTab(color.name)}
-                          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                            activeColorTab === color.name
-                              ? 'border-foreground text-foreground bg-background'
-                              : 'border-transparent text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          <span
-                            className="w-4 h-4 rounded-full border border-border"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          {color.name}
-                          {color.images.length > 0 && (
-                            <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                              {color.images.length}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="p-4">
-                      {activeColor ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">
-                              Adicione imagens para a cor <strong>{activeColor.name}</strong>
-                            </p>
-                            <label className="inline-flex items-center gap-2 bg-muted hover:bg-muted/80 px-3 py-2 rounded-lg cursor-pointer transition-colors">
-                              <Upload className="h-4 w-4" />
-                              <span className="text-sm font-medium">Upload</span>
-                              <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageUpload}
-                                className="hidden"
-                              />
-                            </label>
-                          </div>
-
-                          {activeColor.images.length > 0 ? (
-                            <div className="grid grid-cols-4 gap-3">
-                              {activeColor.images.map((image, index) => (
-                                <div key={index} className="relative group aspect-square rounded-lg overflow-hidden bg-muted">
-                                  <Image
-                                    src={image}
-                                    alt={`${activeColor.name} ${index + 1}`}
-                                    fill
-                                    className="object-cover"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveImage(activeColor.name, index)}
-                                    className="absolute top-2 right-2 p-1.5 bg-background/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                  {index === 0 && (
-                                    <span className="absolute bottom-2 left-2 text-xs bg-foreground text-background px-2 py-0.5 rounded">
-                                      Principal
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
-                              <ImageIcon className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                              <p className="text-sm text-muted-foreground mb-1">
-                                Nenhuma imagem adicionada
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Clique em Upload para adicionar imagens desta cor
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <p className="text-sm text-muted-foreground">
-                            Selecione uma cor acima para adicionar imagens
-                          </p>
-                        </div>
-                      )}
-                    </div>
+      ) : filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="group relative">
+              <div className="relative aspect-[3/4] bg-neutral-100 rounded-[2.5rem] overflow-hidden mb-6 shadow-sm group-hover:shadow-xl transition-all duration-700">
+                {/* Badge de Destaque */}
+                {product.featured && (
+                  <div className="absolute top-6 left-6 z-10 bg-black text-white text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                    Destaque
                   </div>
                 )}
-
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={formData.featured}
-                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="w-4 h-4 rounded border-border"
+                
+                {product.produto_imagens?.[0] ? (
+                  <Image 
+                    src={product.produto_imagens[0].image_url} 
+                    alt={product.name} 
+                    fill 
+                    className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" 
                   />
-                  <label htmlFor="featured" className="text-sm">Marcar como destaque</label>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="text-neutral-300" size={32} />
+                  </div>
+                )}
+                
+                <div className="absolute top-6 right-6">
+                  <span className="px-4 py-2 bg-white/80 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    {product.category}
+                  </span>
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t border-border">
-                  <button
-                    type="button"
-                    onClick={() => { setShowModal(false); resetForm(); }}
-                    className="flex-1 px-4 py-3 border border-border rounded-lg font-medium hover:bg-muted transition-colors"
+                {/* Overlay de Ações */}
+                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                  <button 
+                    onClick={() => { setSelectedProduct(product); setIsModalOpen(true); }}
+                    className="p-4 bg-white rounded-2xl hover:bg-black hover:text-white transition-all shadow-xl"
                   >
-                    Cancelar
+                    <Pencil size={18} />
                   </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-foreground text-background px-4 py-3 rounded-lg font-medium hover:bg-foreground/90 transition-colors"
+                  <button 
+                    onClick={() => setProductToDelete(product)}
+                    className="p-4 bg-white rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl text-red-500"
                   >
-                    Salvar Produto
+                    <Trash2 size={18} />
                   </button>
                 </div>
-              </form>
+              </div>
+
+              <div className="px-2 space-y-1">
+                <h3 className="font-bold text-lg text-neutral-900 truncate pr-4">{product.name}</h3>
+                <div className="flex items-center justify-between text-neutral-500">
+                  <span className="text-sm font-medium">R$ {Number(product.price).toFixed(2)}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter">
+                    {product.produto_variantes?.length || 0} variações
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="h-96 border-2 border-dashed border-neutral-100 rounded-[3rem] flex flex-col items-center justify-center text-center p-10">
+          <Search className="text-neutral-200 mb-4" size={40} />
+          <h3 className="text-xl font-bold">Nenhum produto encontrado</h3>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      {productToDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[3rem] p-10 text-center shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle size={40} />
+            </div>
+            <h2 className="text-2xl font-bold text-neutral-900 mb-3">Remover?</h2>
+            <p className="text-neutral-500 mb-10">
+              Deseja excluir <span className="font-bold text-neutral-900">{productToDelete.name}</span>?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={handleDelete} 
+                disabled={isDeleting} 
+                className="w-full py-5 bg-red-500 text-white rounded-[1.5rem] font-bold text-xs uppercase tracking-widest hover:bg-red-600 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
+              </button>
+              <button onClick={() => setProductToDelete(null)} className="w-full py-5 text-xs font-bold uppercase text-neutral-400">Cancelar</button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Modal de Cadastro/Edição */}
+      {isModalOpen && (
+        <ProductFormModal 
+          isOpen={isModalOpen} 
+          product={selectedProduct} 
+          onClose={() => setIsModalOpen(false)} 
+          onSuccess={() => {
+            fetchProducts();
+            setIsModalOpen(false);
+          }} 
+        />
+      )}
+    </div>
   )
 }
