@@ -2,18 +2,52 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Menu, X, ShoppingBag, User, Search, Settings } from 'lucide-react'
 import { CATEGORIES } from '@/lib/types'
 import { useCart } from '@/context/cart-context'
 import { supabase } from '@/lib/supabase'
 
 export function StoreHeader() {
+  const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const { cart } = useCart()
   const totalItens = cart.length
+
+  // Função de Busca que redireciona para o ID (singular) ou Lista (plural)
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const term = searchQuery.trim()
+    
+    if (term) {
+      try {
+        // Busca na tabela 'produtos' do seu Supabase
+        const { data: produtos, error } = await supabase
+          .from('produtos') 
+          .select('id')
+          .ilike('name', `%${term}%`)
+          .limit(2)
+
+        if (produtos && produtos.length === 1) {
+          // Se achou exatamente 1, vai para a pasta /produto/[id]
+          router.push(`/produto/${produtos[0].id}`)
+        } else {
+          // Se achou vários ou nenhum, vai para a página de resultados /produtos
+          router.push(`/produtos?search=${encodeURIComponent(term)}`)
+        }
+      } catch (err) {
+        router.push(`/produtos?search=${encodeURIComponent(term)}`)
+      }
+
+      setIsSearchOpen(false)
+      setSearchQuery('')
+      setMobileMenuOpen(false)
+    }
+  }
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -58,7 +92,7 @@ export function StoreHeader() {
   ]
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50 w-full">
       {/* Barra de Anúncios (Marquee) */}
       <div className="relative overflow-hidden bg-[#b5518f] text-gray-100 border-b border-pink-200">
         <div className="marquee-track font-medium text-sm py-2 whitespace-nowrap">
@@ -103,18 +137,20 @@ export function StoreHeader() {
 
             {/* Ações Direitas */}
             <div className="flex items-center gap-2 sm:gap-4">
-              <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+              <button 
+                onClick={() => setIsSearchOpen(!isSearchOpen)} 
+                className={`p-2 transition-colors ${isSearchOpen ? 'text-[#b5518f]' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <Search className="h-5 w-5" />
               </button>
 
               <Link
-                href={isLoggedIn ? "/perfil" : "/admin/login"}
+                href={isLoggedIn ? "/perfil" : "/login"}
                 className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <User className="h-5 w-5" />
               </Link>
               
-              {/* Botão Admin Desktop */}
               {isAdmin && (
                 <Link 
                   href="/admin" 
@@ -128,13 +164,12 @@ export function StoreHeader() {
               <Link href="/carrinho" className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
                 <ShoppingBag className="h-5 w-5" />
                 {totalItens > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#b5518f] text-white text-[10px] flex items-center justify-center animate-in fade-in zoom-in duration-300">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#b5518f] text-white text-[10px] flex items-center justify-center animate-in fade-in zoom-in duration-300 font-bold">
                     {totalItens}
                   </span>
                 )}
               </Link>
 
-              {/* Botão Hambúrguer Mobile */}
               <button 
                 className="md:hidden p-2 text-muted-foreground" 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -144,9 +179,35 @@ export function StoreHeader() {
             </div>
           </div>
         </nav>
+
+        {/* INPUT DE PESQUISA */}
+        {isSearchOpen && (
+          <div className="border-t border-border bg-background animate-in slide-in-from-top duration-200">
+            <div className="mx-auto max-w-7xl px-4 py-4">
+              <form onSubmit={handleSearch} className="relative flex items-center">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="O que você está procurando?"
+                  className="w-full bg-muted/50 border-none rounded-full py-2 px-12 focus:ring-2 focus:ring-[#b5518f] outline-none text-foreground h-11"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
+                <button 
+                  type="button" 
+                  onClick={() => setIsSearchOpen(false)}
+                  className="absolute right-4 text-muted-foreground hover:text-foreground p-1"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Menu Mobile Lateral/Dropdown */}
+      {/* Menu Mobile */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-background border-b border-border animate-in slide-in-from-top duration-300">
           <div className="space-y-1 px-4 pb-6 pt-2">
@@ -161,7 +222,6 @@ export function StoreHeader() {
               </Link>
             ))}
             
-            {/* Links extras no mobile */}
             {isAdmin && (
               <Link
                 href="/admin"
