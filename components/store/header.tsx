@@ -145,7 +145,7 @@ export function StoreHeader() {
               </button>
 
               <Link
-                href={isLoggedIn ? "/perfil" : "/login"}
+                href={isLoggedIn ? "/perfil" : "/admin/login"}
                 className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <User className="h-5 w-5" />
