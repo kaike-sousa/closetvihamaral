@@ -2,10 +2,9 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-import Link from 'next/link'
 import { StoreHeader } from '@/components/store/header'
 import { StoreFooter } from '@/components/store/footer'
-import { ProductCard } from '@/components/store/product-card'
+import { ProductCard } from '@/components/page/product-card'
 import { supabase } from '@/lib/supabase'
 import { CATEGORIES, Category } from '@/lib/types'
 
@@ -17,106 +16,80 @@ function ProductsContent() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Lógica para o Título Dinâmico (Ver tudo, Saias, Vestidos, etc)
+  const getPageTitle = () => {
+    if (category === 'todos') return 'Ver tudo'
+    const cat = CATEGORIES.find(c => c.value === category)
+    return cat ? cat.label : 'Lançamentos'
+  }
+
   useEffect(() => {
     fetchProducts()
   }, [category])
 
   const fetchProducts = async () => {
     setLoading(true)
-
-    let query = supabase
-      .from('produtos')
-      .select(`
-        *,
-        produto_imagens(*),
-        produto_variantes(*)
-      `)
-
-    // FILTRO DINÂMICO (corrigido)
-    if (category !== 'todos') {
-      query = query.eq('category', category)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Erro ao buscar produtos:', error)
-      setLoading(false)
-      return
-    }
-
-    // TRANSFORMAÇÃO SEGURA
-    const formattedProducts = (data || []).map((product: any) => {
-      const colorsMap: any = {}
-
-      product.produto_imagens?.forEach((img: any) => {
-        if (!colorsMap[img.color]) {
-          colorsMap[img.color] = {
-            name: img.color,
-            images: []
-          }
-        }
-
-        colorsMap[img.color].images.push(img.image_url)
-      })
-
-      return {
-        ...product,
-        colors: Object.values(colorsMap),
-        produto_imagens: product.produto_imagens || [],
-        produto_variantes: product.produto_variantes || []
+    try {
+      let query = supabase.from('produtos').select(`*, produto_imagens(*), produto_variantes(*)`)
+      
+      if (category !== 'todos') {
+        query = query.eq('category', category)
       }
-    })
+      
+      const { data, error } = await query
+      if (error) throw error
 
-    setProducts(formattedProducts)
-    setLoading(false)
+      const formattedProducts = (data || []).map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        category: product.category,
+        image: product.produto_imagens?.[0]?.image_url || "/placeholder.svg",
+      }))
+      setProducts(formattedProducts)
+    } catch (error) {
+      console.error('Erro:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <>
-      {/* FILTRO DE CATEGORIA */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {CATEGORIES.map((cat) => (
-          <Link
-            key={cat.value}
-            href={
-              cat.value === 'todos'
-                ? '/produtos'
-                : `/produtos?categoria=${cat.value}`
-            }
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              category === cat.value
-                ? 'bg-foreground text-background'
-                : 'bg-muted hover:bg-muted-foreground/10'
-            }`}
-          >
-            {cat.label}
-          </Link>
-        ))}
+    <div className="w-full">
+      {/* TÍTULO ESTILO INSTAGRAM / ZÁFIRA */}
+      <header className="mb-16 mt-8 text-center">
+        <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-balance text-zinc-900">
+          {getPageTitle()}
+        </h2>
+        <div className="flex justify-center">
+          <div className="h-[2px] w-12 bg-zinc-200"></div>
+        </div>
+      </header>
+
+      {/* CONTAGEM DE ITENS MINIMALISTA */}
+      <div className="mb-6 flex items-center justify-between px-1">
+        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">
+          {products.length} {products.length === 1 ? 'Produto' : 'Produtos'}
+        </span>
       </div>
 
-      {/* LISTAGEM */}
       {loading ? (
-        <div className="py-16 text-center text-muted-foreground">
-          Carregando produtos...
+        <div className="py-40 text-center">
+          <span className="text-[11px] uppercase tracking-[0.5em] text-zinc-400 animate-pulse">
+            Carregando Coleção
+          </span>
         </div>
       ) : (
         <>
-          <div className="mb-6 text-sm text-muted-foreground">
-            {products.length}{' '}
-            {products.length === 1
-              ? 'produto encontrado'
-              : 'produtos encontrados'}
-          </div>
-
           {products.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">
-                Nenhum produto encontrado nesta categoria.
+            <div className="text-center py-32 border-t border-zinc-100">
+              <p className="font-serif text-xl text-zinc-400 italic">
+                Nenhum item encontrado nesta categoria.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            /* GRID SEM BORDAS E COLADO - ESTILO ATACADO GRINGA */
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-1 gap-y-10 md:gap-x-2 md:gap-y-16">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -124,38 +97,24 @@ function ProductsContent() {
           )}
         </>
       )}
-    </>
+    </div>
   )
 }
 
 export default function ProductsPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <StoreHeader />
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* BREADCRUMB */}
-          <nav className="mb-6 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">
-              Início
-            </Link>
-            <span className="mx-2">/</span>
-            <span>Produtos</span>
-          </nav>
-
-          <h1 className="font-serif text-3xl font-semibold mb-8">
-            Nossos Produtos
-          </h1>
-
-          <Suspense
-            fallback={
-              <div className="py-16 text-center text-muted-foreground">
-                Carregando...
-              </div>
-            }
-          >
+        {/* Largura total para destacar as fotos, como na Záfira */}
+        <div className="mx-auto w-full max-w-[1500px] px-2 md:px-6 py-10">
+          
+          <Suspense fallback={
+            <div className="py-24 text-center text-[10px] uppercase tracking-[0.3em] text-zinc-400">
+              Aguarde...
+            </div>
+          }>
             <ProductsContent />
           </Suspense>
 
