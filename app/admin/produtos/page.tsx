@@ -69,21 +69,21 @@ export default function AdminProductsPage() {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="relative hidden sm:block">
+          <div className="relative block">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
             <input 
               type="text"
               placeholder="Buscar peça..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-6 py-4 bg-neutral-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-black transition-all w-64"
+              className="pl-12 pr-6 py-4 bg-neutral-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-black transition-all w-full sm:w-64"
             />
           </div>
           <button 
             onClick={() => { setSelectedProduct(null); setIsModalOpen(true); }} 
             className="bg-black text-white px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-neutral-800 transition-all shadow-2xl shadow-black/20"
           >
-            <Plus size={18} /> Nova Peça
+            <Plus size={18} /> <span className="hidden xs:inline">Nova Peça</span>
           </button>
         </div>
       </div>
@@ -119,26 +119,33 @@ export default function AdminProductsPage() {
                   </div>
                 )}
                 
-                <div className="absolute top-6 right-6">
+                {/* Categoria - Ajustada para não sobrepor botões em mobile */}
+                <div className="absolute bottom-6 left-6 md:top-6 md:right-6 md:bottom-auto md:left-auto">
                   <span className="px-4 py-2 bg-white/80 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">
                     {product.category}
                   </span>
                 </div>
 
-                {/* Overlay de Ações */}
-                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                {/* Overlay de Ações - Ajustado para Mobile */}
+                <div className="absolute inset-0 bg-black/5 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <div className="absolute 
+                  top-4 right-4 flex gap-2
+                  md:top-auto md:bottom-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:gap-3 
+                  md:translate-y-10 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 
+                  transition-all duration-500 delay-100 z-20"
+                >
                   <button 
                     onClick={() => { setSelectedProduct(product); setIsModalOpen(true); }}
-                    className="p-4 bg-white rounded-2xl hover:bg-black hover:text-white transition-all shadow-xl"
+                    className="p-3 md:p-4 bg-white/90 backdrop-blur-sm rounded-xl md:rounded-2xl hover:bg-black hover:text-white transition-all shadow-xl text-neutral-800"
                   >
-                    <Pencil size={18} />
+                    <Pencil size={16} className="md:w-[18px]" />
                   </button>
                   <button 
                     onClick={() => setProductToDelete(product)}
-                    className="p-4 bg-white rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl text-red-500"
+                    className="p-3 md:p-4 bg-white/90 backdrop-blur-sm rounded-xl md:rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl text-red-500"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} className="md:w-[18px]" />
                   </button>
                 </div>
               </div>
