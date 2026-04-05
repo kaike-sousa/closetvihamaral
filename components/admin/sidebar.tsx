@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
   Package, 
@@ -11,48 +11,44 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X,
-  Home
+  X
 } from 'lucide-react'
-import { useAuth } from '@/lib/auth-context'
 
+// Removido o item "Início" daqui para evitar duplicidade
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/produtos', label: 'Produtos', icon: Package },
   { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingCart },
   { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
-  { href: '/', label: 'Início', icon: Home },
 ]
 
 export function AdminSidebar() {
   const pathname = usePathname()
-  const router = useRouter()
-  const { logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     setMobileOpen(false)
   }, [pathname])
 
-  const handleLogout = () => {
-    logout()
-    router.push('/admin/login')
-  }
-
   const isActive = (href: string) => {
-    if (href === '/' && pathname !== '/') return false
     return href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)
   }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[60] bg-white border-b border-gray-200">
       <div className="max-w-[1600px] mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
-        
+
         {/* Logo */}
-        <Link href="/admin" className="flex flex-col min-w-fit">
-          <span className="font-serif text-xl font-bold text-gray-900 italic leading-none">Closet Vih Amaral</span>
-          <span className="text-[10px] uppercase tracking-[2px] text-gray-400 font-bold">Admin</span>
+        <Link href="/" className="flex flex-col items-center group select-none cursor-pointer">
+          <div className="flex items-center gap-2">
+            <h1 className="font-serif text-4xl font-bold text-gray-800 tracking-tight">closet</h1>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-gray-800">
+              <path d="M12 3a2 2 0 00-2 2 2 2 0 004 0c0-1.1-.9-2-2-2z" />
+              <path d="M12 7v2l8 8H4l8-8z" />
+            </svg>
+          </div>
+          <span className="text-sm tracking-widest text-gray-600 mt-1 font-light uppercase">VIH AMARAL</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -79,14 +75,14 @@ export function AdminSidebar() {
           })}
         </nav>
 
-        {/* Logout Button (Desktop) */}
-        <button
-          onClick={handleLogout}
+        {/* Botão Sair - Volta para a Home */}
+        <Link
+          href="/"
           className="hidden lg:flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
         >
           <LogOut className="h-4 w-4" />
           Sair
-        </button>
+        </Link>
 
         {/* Mobile Menu Button */}
         <button
@@ -120,13 +116,14 @@ export function AdminSidebar() {
               </Link>
             )
           })}
-          <button
-            onClick={handleLogout}
+          
+          <Link
+            href="/"
             className="flex items-center gap-3 px-4 py-4 w-full text-base font-medium text-red-500 border-t border-gray-100"
           >
             <LogOut className="h-5 w-5" />
-            Sair da Conta
-          </button>
+            Sair para o Início
+          </Link>
         </nav>
       </div>
     </header>
